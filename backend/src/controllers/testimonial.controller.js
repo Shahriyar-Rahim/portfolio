@@ -33,9 +33,6 @@ const getApprovedTestimonials = async (req, res) => {
   }
 };
 
-// controllers/testimonialController.js
-import Testimonial from "../models/testimonial.model.js";
-
 const deleteTestimonial = async (req, res) => {
   try {
     const { id } = req.params;

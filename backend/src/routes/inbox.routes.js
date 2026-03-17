@@ -1,5 +1,5 @@
 import express from "express";
-import inboxControlers from "../controllers/inbox.controller.js";
+import inboxControlers from "../controllers/inbox.conroller.js";
 
 const router = express.Router();
 

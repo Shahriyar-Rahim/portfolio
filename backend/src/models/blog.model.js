@@ -8,7 +8,9 @@ const blogSchema = new mongoose.Schema(
     description: { type: String, required: true },
     shortDescription: { type: String, required: true },
   },
-  { timestamps: true },
+  { timestamps: true,
+    versionKey: false
+   },
 );
 
 const Blog = mongoose.model("Blog", blogSchema);
