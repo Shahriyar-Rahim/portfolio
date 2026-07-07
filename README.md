@@ -7,11 +7,7 @@ wss
 asdv
 lblkl
 slfn
-fkldfd
-rf
-dsd
-jgv
-kbj
+fkldfdf
 cvghtghbbbs
 dfgees
 dyhjfdddss
