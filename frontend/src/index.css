@@ -1,4 +1,131 @@
 @import "tailwindcss";
-@plugin "daisyui" {
-   themes: light --default;
- }
+
+@theme {
+  /* Palette — dark "systems console" theme: PCB-black surface, copper
+     solder-trace as the primary accent, oscilloscope blue as the signal/
+     interactive accent. Grounded in Shahriyar's dual identity (software +
+     embedded hardware) rather than a generic dark template. */
+  --color-ink: #edefec;
+  --color-ink-dim: #b7c0ba;
+  --color-ink-muted: #7f8a84;
+
+  --color-bg: #0a0e0d;
+  --color-surface: #101513;
+  --color-surface-raised: #161d19;
+  --color-line: #232b27;
+  --color-line-soft: #1a201d;
+
+  --color-copper: #c98a4b;
+  --color-copper-soft: #e3b27c;
+  --color-signal: #5ea8ed;
+  --color-signal-soft: #9dcbf5;
+  --color-ok: #6fcf97;
+  --color-danger: #e2685c;
+
+  --font-display: "Space Grotesk", "Inter", sans-serif;
+  --font-body: "Inter", sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, monospace;
+}
+
+@layer base {
+  * {
+    box-sizing: border-box;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    background-color: var(--color-bg);
+    color: var(--color-ink);
+    font-family: var(--font-body);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  ::selection {
+    background: var(--color-copper);
+    color: #0a0e0d;
+  }
+
+  /* Visible keyboard focus everywhere — never suppressed */
+  :focus-visible {
+    outline: 2px solid var(--color-signal);
+    outline-offset: 3px;
+  }
+
+  ::-webkit-scrollbar {
+    width: 10px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: var(--color-bg);
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: var(--color-line);
+    border-radius: 999px;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: var(--color-copper);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.001ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.001ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+}
+
+@layer utilities {
+  .font-display {
+    font-family: var(--font-display);
+  }
+
+  .font-mono {
+    font-family: var(--font-mono);
+  }
+
+  .bg-circuit {
+    background-image:
+      linear-gradient(var(--color-line-soft) 1px, transparent 1px),
+      linear-gradient(90deg, var(--color-line-soft) 1px, transparent 1px);
+    background-size: 42px 42px;
+  }
+
+  .text-glow {
+    text-shadow: 0 0 24px color-mix(in srgb, var(--color-copper) 45%, transparent);
+  }
+
+  .trace-border {
+    position: relative;
+  }
+
+  .trace-border::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    padding: 1px;
+    background: linear-gradient(135deg, var(--color-copper), transparent 40%);
+    -webkit-mask:
+      linear-gradient(#fff 0 0) content-box,
+      linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    pointer-events: none;
+  }
+
+  .trace-border:hover::before {
+    opacity: 1;
+  }
+}

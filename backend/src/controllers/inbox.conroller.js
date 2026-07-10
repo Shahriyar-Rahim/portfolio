@@ -42,26 +42,30 @@ const makeInbox = async (req, res) => {
       message,
     });
 
-    await transporter.sendMail({
-      from: `"Portfolio Contact" <${process.env.EMAIL_USER}>`,
-      to: process.env.EMAIL_RECIPIENT,
-      replyTo: email, // This is the visitor's email address
-      subject: `New Message: ${subject}`,
-      text: `Message from ${name}:\n\n${message}`,
-    });
+    // Email notifications are best-effort: if SMTP creds are missing/misconfigured
+    // the message is still saved, and the visitor still gets a success response.
+    try {
+      await transporter.sendMail({
+        from: `"Portfolio Contact" <${process.env.EMAIL_USER}>`,
+        to: process.env.EMAIL_RECIPIENT,
+        replyTo: email, // This is the visitor's email address
+        subject: `New Message: ${subject}`,
+        text: `Message from ${name}:\n\n${message}`,
+      });
 
-    await transporter.sendMail({
-      from: `"Md. Shahriyar Rahim" <${process.env.EMAIL_USER}>`,
-      to: email, // This sends it back to the person who messaged you
-      subject: "Message Received - Thank You!",
-      text: `Hi ${name},\n\nThank you for reaching out! I have received your message regarding "${subject}" and will get back to you as soon as possible.\n\nBest regards,\nYour Name`,
-    });
-
-    res.status(201).json({ success: true, message: "Message sent!" });
+      await transporter.sendMail({
+        from: `"Md. Shahriyar Rahim" <${process.env.EMAIL_USER}>`,
+        to: email, // This sends it back to the person who messaged you
+        subject: "Message Received - Thank You!",
+        text: `Hi ${name},\n\nThank you for reaching out! I have received your message regarding "${subject}" and will get back to you as soon as possible.\n\nBest regards,\nMd. Shahriyar Rahim`,
+      });
+    } catch (mailError) {
+      console.error("Inbox email notification failed:", mailError.message);
+    }
 
     res.status(201).json({
       success: true,
-      message: "Inbox created successfully",
+      message: "Message sent!",
       data: newInbox,
     });
   } catch (error) {
@@ -100,14 +104,7 @@ const getInbox = async (req, res) => {
 
 const getAllInbox = async (req, res) => {
   try {
-    const inboxes = await Inbox.find();
-
-    if (inboxes.length === 0) {
-      return res.status(404).json({
-        success: false,
-        message: "Inboxes not found",
-      });
-    }
+    const inboxes = await Inbox.find().sort({ createdAt: -1 });
 
     res.status(200).json({
       success: true,
@@ -144,7 +141,7 @@ const replyInbox = async (req, res) => {
 
     // 2. Send the email to the user
     await transporter.sendMail({
-      from: `"Your Portfolio" <${process.env.EMAIL_SERVICE_USER}>`,
+      from: `"Md. Shahriyar Rahim" <${process.env.EMAIL_USER}>`,
       to: inbox.email, // Use the email from the original document
       subject: `Re: ${inbox.subject}`,
       text: replyMessage,

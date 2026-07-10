@@ -34,12 +34,10 @@ const addExperience = async (req, res) => {
   }
 };
 
+// Public — portfolio visitors need to see the experience timeline without logging in.
 const getAllExperiences = async (req, res) => {
   try {
-    const user = req.user;
-    if (!user) return res.status(401).json({ message: "Unauthorized" });
-
-    const experiences = await Experience.find({ user: user._id });
+    const experiences = await Experience.find().sort({ createdAt: -1 });
 
     if (!experiences)
       return res
@@ -67,14 +65,14 @@ const updateExperience = async (req, res) => {
     const user = req.user;
     if (!user) return res.status(401).json({ message: "Unauthorized" });
 
-    const { _id } = req.params;
+    const { id } = req.params;
 
-    if (!_id)
+    if (!id)
       return res
         .status(400)
         .json({ success: false, message: "Experience id is required" });
 
-    const experience = await Experience.findById(_id);
+    const experience = await Experience.findById(id);
 
     if (!experience)
       return res
@@ -85,7 +83,7 @@ const updateExperience = async (req, res) => {
     const updatedData = { ...req.body };
 
     const updated = await Experience.findOneAndUpdate(
-      { _id, user: user._id },
+      { _id: id, user: user._id },
       updatedData,
       { new: true },
     );
@@ -111,21 +109,21 @@ const deleteExperience = async (req, res) => {
     const user = req.user;
     if (!user) return res.status(401).json({ message: "Unauthorized" });
 
-    const { _id } = req.params;
+    const { id } = req.params;
 
-    if (!_id)
+    if (!id)
       return res
         .status(400)
         .json({ success: false, message: "Experience id is required" });
 
-    const experience = await Experience.findById(_id);
+    const experience = await Experience.findById(id);
 
     if (!experience)
       return res
         .status(404)
         .json({ success: false, message: "Experience not found" });
 
-    await Experience.findByIdAndDelete(_id);
+    await Experience.findByIdAndDelete(id);
 
     res.status(200).json({
       success: true,

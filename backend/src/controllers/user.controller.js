@@ -4,7 +4,18 @@ import bcrypt from "bcrypt";
 
 const register = async (req, res) => {
   try {
-    const { email, password } = req.body;
+    const { email, password, setupKey } = req.body;
+
+    // This backend has a single owner/admin (no separate roles), so the
+    // register endpoint must never be left open in production — anyone who
+    // could hit it would gain full admin access. Gate it behind a one-time
+    // setup key from the environment.
+    if (!process.env.SETUP_KEY || setupKey !== process.env.SETUP_KEY) {
+      return res.status(403).json({
+        success: false,
+        message: "Registration is disabled",
+      });
+    }
 
     const user = await User.create({ email, password });
 
@@ -46,8 +57,13 @@ const login = async (req, res) => {
     } else {
       // password is correct --> generate token (jwt)
       const token = authConfig.encodeToken(user?.email, user?._id?.toString());
-      // store token in cookies
-      res.cookie("user-token", token);
+      // store token in an httpOnly cookie so it can't be read/exfiltrated via JS
+      res.cookie("user-token", token, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "lax",
+        maxAge: 7 * 24 * 60 * 60 * 1000,
+      });
       // return response to the frontend
       res.status(200).json({
         success: true,
@@ -68,9 +84,28 @@ const login = async (req, res) => {
   }
 };
 
+const logout = async (req, res) => {
+  res.clearCookie("user-token", {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "lax",
+  });
+  res.status(200).json({ success: true, message: "Logged out successfully" });
+};
+
+const me = async (req, res) => {
+  // req.user is attached by the protect middleware
+  res.status(200).json({
+    success: true,
+    data: { id: req.user._id, email: req.user.email },
+  });
+};
+
 const userControlers = {
   register,
   login,
+  logout,
+  me,
 };
 
 export default userControlers;

@@ -1,11 +1,12 @@
 import express from "express";
 import experienceControlers from "../controllers/experience.controller.js";
+import protectMiddleware from "../middlewares/protect.js";
 
 const router = express.Router();
 
-router.post("/", experienceControlers.addExperience);
-router.get("/add", experienceControlers.getAllExperiences);
-router.patch("/:id", experienceControlers.updateExperience);
-router.delete("/:id", experienceControlers.deleteExperience);
+router.get("/", experienceControlers.getAllExperiences); // public
+router.post("/", protectMiddleware.protect, experienceControlers.addExperience);
+router.patch("/:id", protectMiddleware.protect, experienceControlers.updateExperience);
+router.delete("/:id", protectMiddleware.protect, experienceControlers.deleteExperience);
 
 export default router;

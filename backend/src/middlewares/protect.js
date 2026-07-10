@@ -1,50 +1,47 @@
 import jwt from "jsonwebtoken";
-import Admin from "../models/admin.model.js";
+import User from "../models/user.model.js";
 
-// Protect routes — only verified admins pass through
+// Protect routes — only the authenticated site owner passes through.
+// This is a single-owner portfolio backend (User === the portfolio admin),
+// so there is no separate Admin model/role — we just verify the JWT and
+// attach the matching user to req.user, which is what every controller expects.
 const protect = async (req, res, next) => {
   let token;
- 
+
+  // Accept token either from the Authorization header or the httpOnly cookie
+  // set on login ("user-token"), since the frontend uses the cookie by default.
   if (
     req.headers.authorization &&
     req.headers.authorization.startsWith("Bearer")
   ) {
     token = req.headers.authorization.split(" ")[1];
+  } else if (req.cookies && req.cookies["user-token"]) {
+    token = req.cookies["user-token"];
   }
- 
+
   if (!token) {
-    return res.status(401).json({ success: false, message: "Not authorized, no token" });
+    return res
+      .status(401)
+      .json({ success: false, message: "Not authorized, no token" });
   }
- 
+
   try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    // Attach admin to request (exclude password)
-    req.admin = await Admin.findById(decoded.id);
- 
-    if (!req.admin) {
-      return res.status(401).json({ success: false, message: "Admin not found" });
+    const decoded = jwt.verify(token, process.env.JWT_SECRET_KEY);
+    req.user = await User.findById(decoded.id);
+
+    if (!req.user) {
+      return res
+        .status(401)
+        .json({ success: false, message: "User not found" });
     }
- 
-    if (!req.admin.isActive) {
-      return res.status(403).json({ success: false, message: "Account is deactivated" });
-    }
- 
+
     next();
   } catch (error) {
-    return res.status(401).json({ success: false, message: "Token invalid or expired" });
+    return res
+      .status(401)
+      .json({ success: false, message: "Token invalid or expired" });
   }
-};
- 
-// Superadmin-only gate — use after protect
-const superAdminOnly = (req, res, next) => {
-  if (req.admin.role !== "superadmin") {
-    return res.status(403).json({
-      success: false,
-      message: "Only superadmin can perform this action",
-    });
-  }
-  next();
 };
 
-const protectMiddleware = { protect, superAdminOnly };
-export default protectMiddleware
+const protectMiddleware = { protect };
+export default protectMiddleware;

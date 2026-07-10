@@ -110,9 +110,10 @@ const deleteService = async (req, res) => {
   }
 };
 
+// Public — portfolio visitors need to see services without logging in.
 const getAllServices = async (req, res) => {
   try {
-    const services = await Service.find({ user: user._id });
+    const services = await Service.find().sort({ createdAt: -1 });
 
     if (services.length === 0) {
       return res.status(200).json({
@@ -136,11 +137,9 @@ const getAllServices = async (req, res) => {
   }
 };
 
+// Public — single-service view for the portfolio's services page.
 const getService = async (req, res) => {
   try {
-    const user = req.user;
-    if (!user) return res.status(401).json({ message: "Unauthorized" });
-
     const { id } = req.params;
     if (!id)
       return res

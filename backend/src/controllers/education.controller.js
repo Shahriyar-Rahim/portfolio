@@ -37,14 +37,12 @@ const updateEducation = async (req, res) => {
   }
 };
 
+// Public — visitors viewing the portfolio need to see education entries
+// without logging in. This is a single-owner site, so we just return
+// everything sorted by most recent start year.
 const getAllEducations = async (req, res) => {
   try {
-    const user = req.user;
-    if (!user) return res.status(401).json({ message: "Unauthorized" });
-
-    const educations = await Education.find({ user: user._id });
-    if (!educations)
-      return res.status(404).json({ message: "Educations not found" });
+    const educations = await Education.find().sort({ startYear: -1 });
 
     res.status(200).json({
       success: true,
@@ -62,19 +60,24 @@ const getAllEducations = async (req, res) => {
   }
 };
 
+// NOTE: this was previously a broken duplicate of getAllEducations (didn't
+// actually delete anything). Implemented properly as a real delete, protected.
 const deleteEducation = async (req, res) => {
   try {
-    const user = req.user;
-    if (!user) return res.status(401).json({ message: "Unauthorized" });
+    const deleted = await Education.findOneAndDelete({
+      _id: req.params.id,
+      user: req.user._id,
+    });
 
-    const educations = await Education.find({ user: user._id });
-    if (!educations)
-      return res.status(404).json({ message: "Educations not found" });
+    if (!deleted)
+      return res
+        .status(404)
+        .json({ success: false, message: "Education not found" });
 
     res.status(200).json({
       success: true,
-      message: "Educations fetched successfully",
-      data: educations,
+      message: "Education deleted successfully",
+      data: deleted,
     });
   } catch (error) {
     res

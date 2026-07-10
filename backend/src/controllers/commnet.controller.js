@@ -1,21 +1,20 @@
+import Comment from "../models/comment.model.js";
+
+// Comments on this portfolio's blog are left by anonymous visitors (name + email),
+// matching the Comment model — there is no logged-in "userId" for public commenters.
 const comment = async (req, res) => {
     try {
         const { blogId } = req.params;
-        const { text, userId } = req.body;
+        const { name, email, comment: text } = req.body;
 
-        if(!text || !userId || !blogId) return res.status(400).json({success: false, message: "All fields are required"});
+        if(!text || !name || !email || !blogId) return res.status(400).json({success: false, message: "All fields are required"});
 
         const newComment = await Comment.create({
-            blog: blogId,
-            user: userId,
-            text
+            blogID: blogId,
+            name,
+            email,
+            comment: text
         })
-
-        await Blog.findByIdAndUpdate(blogId, {
-            $push: {
-                comments: newComment._id
-            }
-        });
 
         res.status(201).json({success: true, message: "Comment created successfully", data: newComment});
     } catch (error) {
@@ -28,7 +27,7 @@ const getComments = async (req, res) => {
         const { blogId } = req.params;
         if(!blogId) return res.status(400).json({success: false, message: "Blog id is required"});
 
-        const comments = await Comment.find({blog: blogId}).populate('user', 'name');
+        const comments = await Comment.find({blogID: blogId}).sort({ createdAt: -1 });
 
         res.status(200).json({success: true, message: "Comments fetched successfully", data: comments});
     } catch (error) {
