@@ -32,6 +32,7 @@ const app = express();
 const allowedOrigins = [
   process.env.FRONTEND_URL,
   "http://localhost:5173",
+  "https://shahriyar.no-idea.top",
 ].filter(Boolean);
 
 app.use(
@@ -64,7 +65,7 @@ app.use("/api/v1/hero-status", heroStatusRoutes);
 app.use("/api/v1/jobs", jobRoutes);
 app.use("/api/v1/cv", cvRoutes);
 app.use("/api/v1/portfolio/github", githubRoutes);
-app.use("/api/v1/auth", authRecoveryRoutes);
+app.use("/api/v1/auth/recovery", authRecoveryRoutes);
 app.use("/api/v1/about", aboutRoutes);
 
 // 404 handler
