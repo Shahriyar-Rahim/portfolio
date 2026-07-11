@@ -56,10 +56,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
-const path = require("path");
-
 const frontendPath = path.join(__dirname, "../frontend/dist");
-
 app.use(express.static(frontendPath));
 
 connectDB();
