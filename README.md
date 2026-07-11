@@ -8,7 +8,7 @@ A self-built, self-hosted portfolio platform — not a template. Every section (
 education, services, blog, testimonials, job board, CV/profile) is content-managed from a
 custom admin panel, backed by a REST API I designed and wired up myself.
 
-[![Live Demo](https://shahriyar.no-idea.top/)](#-live-demo)
+[![Live Demo](https://shahriyar.no-idea.top)](#-live-demo)
 ![React](https://img.shields.io/badge/React-19-5ea8ed?style=flat-square&logo=react&logoColor=white)
 ![Node.js](https://img.shields.io/badge/Node.js-Express%205-6fcf97?style=flat-square&logo=node.js&logoColor=white)
 ![MongoDB](https://img.shields.io/badge/MongoDB-Mongoose%209-6fcf97?style=flat-square&logo=mongodb&logoColor=white)
@@ -42,15 +42,15 @@ $ whoami
 
 | Homepage — Hero | Experience &amp; Timeline |
 |---|---|
-| <img src="./docs/screenshots/hero.png" width="420" alt="Homepage hero section screenshot"> | <img src="./docs/screenshots/experience.png" width="420" alt="Experience timeline screenshot"> |
+| <img src="./hero.png" width="420" alt="Homepage hero section screenshot"> | <img src="./experience.png" width="420" alt="Experience timeline screenshot"> |
 
 | Blog | Testimonials |
 |---|---|
-| <img src="./docs/screenshots/blog.png" width="420" alt="Blog listing screenshot"> | <img src="./docs/screenshots/testimonials.png" width="420" alt="Testimonials section screenshot"> |
+| <img src="./blog.png" width="420" alt="Blog listing screenshot"> | <img src="./testimonials.png" width="420" alt="Testimonials section screenshot"> |
 
 | Admin Dashboard | CV / Profile Page |
 |---|---|
-| <img src="./docs/screenshots/admin-dashboard.png" width="420" alt="Admin dashboard screenshot"> | <img src="./docs/screenshots/cv-profile.png" width="420" alt="Generated CV profile page screenshot"> |
+| <img src="./admin-dashboard.png" width="420" alt="Admin dashboard screenshot"> | <img src="./cv-profile.png" width="420" alt="Generated CV profile page screenshot"> |
 
 </div>
 
