@@ -4,6 +4,54 @@ import CvProfile from "../models/cvProfile.model.js";
 const requre = createRequire(import.meta.url);
 const PDFParse = requre("pdf-parse-new");
 
+const textFields = ["name", "headline", "email", "phone", "location", "summary"];
+
+const cleanText = (value) => (typeof value === "string" ? value.trim() : "");
+
+const cleanSkills = (skills) =>
+  Array.isArray(skills)
+    ? [...new Set(skills.map(cleanText).filter(Boolean))].slice(0, 50)
+    : [];
+
+const cleanEntries = (entries, fields) =>
+  Array.isArray(entries)
+    ? entries
+        .filter((entry) => entry && typeof entry === "object")
+        .map((entry) =>
+          Object.fromEntries(
+            fields
+              .map((field) => [field, cleanText(entry[field])])
+              .filter(([, value]) => value),
+          ),
+        )
+        .filter((entry) => Object.keys(entry).length)
+        .slice(0, 20)
+    : [];
+
+const profileUpdate = (body = {}) => {
+  const update = {};
+
+  textFields.forEach((field) => {
+    if (field in body) update[field] = cleanText(body[field]);
+  });
+  if ("skills" in body) update.skills = cleanSkills(body.skills);
+  if ("experience" in body)
+    update.experience = cleanEntries(body.experience, ["role", "company", "period"]);
+  if ("projects" in body)
+    update.projects = cleanEntries(body.projects, ["name", "description", "url"]);
+  if ("education" in body)
+    update.education = cleanEntries(body.education, ["degree", "institution", "period"]);
+
+  return update;
+};
+
+const publicProfile = (profile) => {
+  if (!profile) return null;
+  const source = profile.toObject ? profile.toObject() : profile;
+  const { parsedText, ...safeProfile } = source;
+  return safeProfile;
+};
+
 const extractProfileFromText = (text) => {
   const lines = (text || "")
     .split(/\r?\n/)
@@ -64,8 +112,8 @@ const readUploadedText = async (fileUrl, mimetype) => {
 
 const getProfile = async (req, res) => {
   try {
-    const profile = await CvProfile.findOne().sort({ updatedAt: -1 });
-    res.status(200).json({ success: true, data: profile });
+    const profile = await CvProfile.findOne().sort({ updatedAt: -1 }).lean();
+    res.status(200).json({ success: true, data: publicProfile(profile) });
   } catch (error) {
     res.status(500).json({ success: false, error: error.message });
   }
@@ -85,18 +133,12 @@ const uploadCv = async (req, res) => {
       {
         cvUrl: req.file.path,
         parsedText,
-        name: req.body.name || fallbackProfile.name || "",
-        headline: req.body.headline || "",
-        email: req.body.email || fallbackProfile.email || "",
-        phone: req.body.phone || fallbackProfile.phone || "",
-        location: req.body.location || fallbackProfile.location || "",
-        summary: req.body.summary || fallbackProfile.summary || "",
-        skills: req.body.skills || fallbackProfile.skills || [],
+        ...profileUpdate({ ...fallbackProfile, ...req.body }),
       },
       { upsert: true, new: true, setDefaultsOnInsert: true },
     );
 
-    res.status(200).json({ success: true, data: profile });
+    res.status(200).json({ success: true, data: publicProfile(profile) });
   } catch (error) {
     res.status(500).json({ success: false, error: error.message });
   }
@@ -104,14 +146,14 @@ const uploadCv = async (req, res) => {
 
 const updateProfile = async (req, res) => {
   try {
-    const updatePayload = { ...req.body };
+    const updatePayload = profileUpdate(req.body);
     const profile = await CvProfile.findOneAndUpdate({}, updatePayload, {
       upsert: true,
       new: true,
       setDefaultsOnInsert: true,
     });
 
-    res.status(200).json({ success: true, data: profile });
+    res.status(200).json({ success: true, data: publicProfile(profile) });
   } catch (error) {
     res.status(500).json({ success: false, error: error.message });
   }
@@ -135,7 +177,7 @@ const uploadProfileImage = async (req, res) => {
       { profileImageUrl: req.file.path },
       { upsert: true, new: true, setDefaultsOnInsert: true },
     );
-    res.status(200).json({ success: true, data: profile });
+    res.status(200).json({ success: true, data: publicProfile(profile) });
   } catch (error) {
     res.status(500).json({ success: false, error: error.message });
   }
@@ -153,7 +195,7 @@ const removeProfileImage = async (req, res) => {
         .status(404)
         .json({ success: false, message: "CV profile not found" });
     }
-    res.status(200).json({ success: true, data: profile });
+    res.status(200).json({ success: true, data: publicProfile(profile) });
   } catch (error) {
     res.status(500).json({ success: false, error: error.message });
   }
