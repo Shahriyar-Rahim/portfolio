@@ -1,5 +1,8 @@
-import { PDFParse } from "pdf-parse";
+import { createRequire } from "module";
 import CvProfile from "../models/cvProfile.model.js";
+
+const requre = createRequire(import.meta.url);
+const PDFParse = requre("pdf-parse-new");
 
 const extractProfileFromText = (text) => {
   const lines = (text || "")
@@ -117,10 +120,14 @@ const updateProfile = async (req, res) => {
 const uploadProfileImage = async (req, res) => {
   try {
     if (!req.file) {
-      return res.status(400).json({ success: false, message: "Profile image is required" });
+      return res
+        .status(400)
+        .json({ success: false, message: "Profile image is required" });
     }
     if (!req.file.mimetype?.startsWith("image/")) {
-      return res.status(400).json({ success: false, message: "Please upload an image file" });
+      return res
+        .status(400)
+        .json({ success: false, message: "Please upload an image file" });
     }
 
     const profile = await CvProfile.findOneAndUpdate(
@@ -142,7 +149,9 @@ const removeProfileImage = async (req, res) => {
       { new: true },
     );
     if (!profile) {
-      return res.status(404).json({ success: false, message: "CV profile not found" });
+      return res
+        .status(404)
+        .json({ success: false, message: "CV profile not found" });
     }
     res.status(200).json({ success: true, data: profile });
   } catch (error) {
@@ -150,5 +159,11 @@ const removeProfileImage = async (req, res) => {
   }
 };
 
-const cvController = { getProfile, uploadCv, updateProfile, uploadProfileImage, removeProfileImage };
+const cvController = {
+  getProfile,
+  uploadCv,
+  updateProfile,
+  uploadProfileImage,
+  removeProfileImage,
+};
 export default cvController;
