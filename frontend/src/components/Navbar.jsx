@@ -1,16 +1,16 @@
 import { useEffect, useState } from "react";
-import { motion } from "framer-motion";
+import { isMotionComponent, motion } from "framer-motion";
 import { HiMenu, HiX } from "react-icons/hi";
 import { Link } from "react-router";
 import ThemeToggle from "./ThemeToggle";
 
 const LINKS = [
-  { to: "/#about", label: "about" },
-  { to: "/#experience", label: "experience" },
-  { to: "/#services", label: "services" },
+  { to: "#about", label: "about" },
+  { to: "#experience", label: "experience" },
+  { to: "#services", label: "services" },
   { to: "/cv", label: "my cv" },
   { to: "/blog", label: "blog" },
-  { to: "/#contact", label: "contact" },
+  { to: "#contact", label: "contact" },
 ];
 
 export default function Navbar() {
