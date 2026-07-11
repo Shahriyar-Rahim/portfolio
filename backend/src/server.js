@@ -74,25 +74,20 @@ app.use("/api/v1/portfolio/github", githubRoutes);
 app.use("/api/v1/auth/recovery", authRecoveryRoutes);
 app.use("/api/v1/about", aboutRoutes);
 
-app.use(express.static(path.join(__dirname, "../frontend/dist")));
+const frontendPath = path.join(__dirname, "../frontend/dist");
 
-app.get("/", (req, res) => {
+app.use(express.static(frontendPath));
+
+app.get("/*", (req, res) => {
   if (req.originalUrl.startsWith("/api")) {
     return res.status(404).json({ message: "API route not found" });
   }
 
-  res.sendFile(path.join(__dirname, "../frontend/dist/index.html"));
-});
-
-app.use((req, res) => {
-  res.status(404).json({
-    success: false,
-    message: `Route ${req.originalUrl} not found`,
-  });
+  res.sendFile(path.join(frontendPath, "index.html"));
 });
 
 app.use((err, req, res, next) => {
-  console.error("🔥 ERROR:", err.message);
+  console.error("ERROR:", err.message);
   res.status(err.status || 500).json({
     success: false,
     message: err.message || "Internal Server Error",
@@ -100,5 +95,5 @@ app.use((err, req, res, next) => {
 });
 
 app.listen(port, () => {
-  console.log(`🚀 Server running on port ${port}`);
+  console.log(`Server running on port ${port}`);
 });
