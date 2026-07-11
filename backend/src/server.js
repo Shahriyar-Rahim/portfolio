@@ -29,21 +29,23 @@ dotenv.config();
 const port = process.env.PORT;
 const app = express();
 
-const allowedOrigins = [
-  process.env.FRONTEND_URL,
-  "http://localhost:5173",
-  "https://shahriyar.no-idea.top",
-].filter(Boolean);
+const allowedOrigins = [process.env.FRONTEND_URL, "http://localhost:5173"];
 
 app.use(
   cors({
     origin: function (origin, callback) {
-      if (!origin || allowedOrigins.includes(origin)) {
-        callback(null, true);
-      } else {
-        callback(new Error("Not allowed by CORS"));
+      if (!origin) return callback(null, true);
+
+      if (
+        allowedOrigins.includes(origin) ||
+        origin.includes("no-idea.top") // 👈 allows subdomains too
+      ) {
+        return callback(null, true);
       }
+
+      return callback(new Error("Not allowed by CORS"));
     },
+    credentials: true,
   }),
 );
 app.use(express.json());
