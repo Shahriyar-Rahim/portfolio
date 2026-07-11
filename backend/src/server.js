@@ -56,6 +56,12 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
+const path = require("path");
+
+const frontendPath = path.join(__dirname, "../frontend/dist");
+
+app.use(express.static(frontendPath));
+
 connectDB();
 
 app.use("/api/v1/auth", authLimiter, userRoutes);
@@ -74,17 +80,14 @@ app.use("/api/v1/portfolio/github", githubRoutes);
 app.use("/api/v1/auth/recovery", authRecoveryRoutes);
 app.use("/api/v1/about", aboutRoutes);
 
-const frontendPath = path.join(__dirname, "../frontend/dist");
-
-app.use(express.static(frontendPath));
-
-app.get("/*", (req, res) => {
+app.use((req, res) => {
   if (req.originalUrl.startsWith("/api")) {
     return res.status(404).json({ message: "API route not found" });
   }
 
   res.sendFile(path.join(frontendPath, "index.html"));
 });
+
 
 app.use((err, req, res, next) => {
   console.error("ERROR:", err.message);
