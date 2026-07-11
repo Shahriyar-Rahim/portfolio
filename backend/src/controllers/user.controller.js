@@ -62,6 +62,7 @@ const login = async (req, res) => {
         httpOnly: true,
         secure: process.env.NODE_ENV === "production",
         sameSite: "none",
+        domain: ".no-idea.top",
         maxAge: 7 * 24 * 60 * 60 * 1000,
       });
       // return response to the frontend
@@ -89,6 +90,7 @@ const logout = async (req, res) => {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
     sameSite: "none",
+    domain: ".no-idea.top",
   });
   res.status(200).json({ success: true, message: "Logged out successfully" });
 };
