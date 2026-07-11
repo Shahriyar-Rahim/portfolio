@@ -3,6 +3,7 @@ import { useEffect } from "react";
 import toast from "react-hot-toast";
 import { useNavigate } from "react-router";
 import { authApi } from "../api/auth.api";
+import { clearAuthToken, setAuthToken } from "../api/axios";
 import { useAuthStore } from "../stores/authStore";
 
 // Verifies the httpOnly-cookie session on load, so a page refresh doesn't
@@ -21,7 +22,10 @@ export function useSessionCheck() {
 
   useEffect(() => {
     if (data?.data) setUser(data.data);
-    if (isError) clear();
+    if (isError) {
+      clearAuthToken();
+      clear();
+    }
   }, [data, isError, setUser, clear]);
 
   return { checked: !isAuthenticated || isFetched };
@@ -34,6 +38,7 @@ export function useLogin() {
   return useMutation({
     mutationFn: (payload) => authApi.login(payload),
     onSuccess: (res) => {
+      setAuthToken(res.token);
       setUser(res.data);
       toast.success("Welcome back.");
       navigate("/admin");
@@ -66,6 +71,7 @@ export function useLogout() {
   return useMutation({
     mutationFn: () => authApi.logout(),
     onSettled: () => {
+      clearAuthToken();
       clear();
       queryClient.clear();
       navigate("/login");
