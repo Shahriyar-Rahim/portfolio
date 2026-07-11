@@ -1,31 +1,19 @@
 import crypto from "crypto";
 import User from "../models/user.model.js";
-import authConfig from "../configs/auth.config.js";
-import { sendMailSafe } from "../configs/mailer.config.js";
+import { sendEmail } from "../configs/mailer.config.js";
 
-const pendingCodes = new Map();
 const pendingLinks = new Map();
+const MAGIC_LINK_TTL_MS = 15 * 60 * 1000;
 
-const createCode = () => Math.floor(100000 + Math.random() * 900000).toString();
+const sendRecoveryEmail = async ({ email, link }) => {
+  const title = "Reset your portfolio password";
 
-const sendRecoveryEmail = async ({ email, code, link }) => {
-  const title = code ? "Admin recovery code" : "Admin magic link";
-  const intro = code
-    ? `Use the following code to verify your account and reset your password.`
-    : `Use the following link to sign in securely without a password.`;
-  const bodyLines = code
-    ? [
-        `Verification code: <strong>${code}</strong>`,
-        "This code expires in 10 minutes.",
-      ]
-    : [`Magic link: <a href="${link}">${link}</a>`];
-
-  return sendMailSafe({
+  return sendEmail({
     from: `"Portfolio Admin" <${process.env.SMTP_USER || "admin@portfolio.local"}>`,
     to: email,
     subject: title,
-    text: code ? `Your recovery code is ${code}` : `Your magic link is ${link}`,
-    html: `<div style="font-family:Arial,sans-serif;padding:24px"><h2>${title}</h2><p>${intro}</p>${bodyLines.map((line) => `<p>${line}</p>`).join("")}</div>`,
+    text: `Open this link to choose a new password: ${link}`,
+    html: `<div style="font-family:Arial,sans-serif;padding:24px"><h2>${title}</h2><p>Use the secure link below to choose a new password. It expires in 15 minutes.</p><p><a href="${link}">Reset password</a></p></div>`,
   });
 };
 
@@ -39,25 +27,20 @@ export const requestRecovery = async (req, res) => {
     }
 
     const user = await User.findOne({ email: email.toLowerCase() });
-    if (!user) {
-      return res
-        .status(404)
-        .json({ success: false, message: "No account found" });
+    // Keep the response generic so this endpoint cannot be used to discover
+    // which email addresses have an admin account.
+    if (user) {
+      const token = crypto.randomBytes(32).toString("hex");
+      const key = email.toLowerCase();
+      pendingLinks.set(key, {
+        token,
+        expiresAt: Date.now() + MAGIC_LINK_TTL_MS,
+      });
+      const params = new URLSearchParams({ email: key, token });
+      const link = `${process.env.FRONTEND_URL || "http://localhost:5173"}/reset-password?${params}`;
+      const sent = await sendRecoveryEmail({ email: key, link });
+      if (!sent.success) throw new Error("Unable to send reset email");
     }
-
-    const code = createCode();
-    const link = `${process.env.FRONTEND_URL || "http://localhost:5173"}/login?magic=${crypto.randomUUID()}`;
-
-    pendingCodes.set(email.toLowerCase(), {
-      code,
-      expiresAt: Date.now() + 10 * 60 * 1000,
-    });
-    pendingLinks.set(email.toLowerCase(), {
-      link,
-      expiresAt: Date.now() + 15 * 60 * 1000,
-    });
-
-    await sendRecoveryEmail({ email, code, link });
 
     res
       .status(200)
@@ -73,23 +56,26 @@ export const requestRecovery = async (req, res) => {
   }
 };
 
-export const verifyRecoveryCode = async (req, res) => {
+export const resetPasswordWithMagicLink = async (req, res) => {
   try {
-    const { email, code, password } = req.body;
+    const { email, token, password } = req.body;
+    if (!email || !token || !password) {
+      return res.status(400).json({ success: false, message: "Email, reset link and new password are required" });
+    }
     const key = email.toLowerCase();
-    const entry = pendingCodes.get(key);
+    const entry = pendingLinks.get(key);
 
     if (!entry || entry.expiresAt < Date.now()) {
-      pendingCodes.delete(key);
+      pendingLinks.delete(key);
       return res
         .status(400)
-        .json({ success: false, message: "Recovery code expired" });
+        .json({ success: false, message: "This reset link has expired. Request a new one." });
     }
 
-    if (entry.code !== code) {
+    if (entry.token !== token) {
       return res
         .status(400)
-        .json({ success: false, message: "Invalid recovery code" });
+        .json({ success: false, message: "This reset link is invalid" });
     }
 
     const user = await User.findOne({ email: key });
@@ -99,14 +85,12 @@ export const verifyRecoveryCode = async (req, res) => {
         .json({ success: false, message: "Account not found" });
     }
 
-    if (password) {
-      user.password = password;
-      await user.save();
-    }
+    user.password = password;
+    await user.save();
 
-    pendingCodes.delete(key);
+    pendingLinks.delete(key);
 
-    res.status(200).json({ success: true, message: "Recovery successful" });
+    res.status(200).json({ success: true, message: "Password changed successfully. You can now sign in." });
   } catch (error) {
     res
       .status(500)
@@ -118,51 +102,4 @@ export const verifyRecoveryCode = async (req, res) => {
   }
 };
 
-export const consumeMagicLink = async (req, res) => {
-  try {
-    const { email, token } = req.query;
-    if (!email || !token) {
-      return res
-        .status(400)
-        .json({ success: false, message: "Missing recovery token" });
-    }
-
-    const entry = pendingLinks.get(email.toLowerCase());
-    if (!entry || entry.expiresAt < Date.now()) {
-      pendingLinks.delete(email.toLowerCase());
-      return res
-        .status(400)
-        .json({ success: false, message: "Magic link expired" });
-    }
-
-    const user = await User.findOne({ email: email.toLowerCase() });
-    if (!user) {
-      return res
-        .status(404)
-        .json({ success: false, message: "Account not found" });
-    }
-
-    pendingLinks.delete(email.toLowerCase());
-
-    const tokenValue = authConfig.encodeToken(user.email, user._id.toString());
-    res.cookie("user-token", tokenValue, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "lax",
-      maxAge: 7 * 24 * 60 * 60 * 1000,
-    });
-    res.redirect(
-      `${process.env.FRONTEND_URL || "http://localhost:5173"}/admin`,
-    );
-  } catch (error) {
-    res
-      .status(500)
-      .json({
-        success: false,
-        message: "Magic link failed",
-        error: error.message,
-      });
-  }
-};
-
-export default { requestRecovery, verifyRecoveryCode, consumeMagicLink };
+export default { requestRecovery, resetPasswordWithMagicLink };

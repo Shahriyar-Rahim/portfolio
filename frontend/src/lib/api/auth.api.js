@@ -6,6 +6,6 @@ export const authApi = {
   me: () => api.get("/auth/me").then((r) => r.data),
   requestRecovery: (payload) =>
     api.post("/auth/forgot-password", payload).then((r) => r.data),
-  verifyRecovery: (payload) =>
-    api.post("/auth/verify-recovery", payload).then((r) => r.data),
+  resetPassword: (payload) =>
+    api.post("/auth/reset-password", payload).then((r) => r.data),
 };

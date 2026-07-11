@@ -1,5 +1,32 @@
 import Job from "../models/job.model.js";
-import { sendMailSafe } from "../configs/mailer.config.js";
+import { sendEmail } from "../configs/mailer.config.js";
+import CvProfile from "../models/cvProfile.model.js";
+
+const recommendationCache = new Map();
+const CACHE_TTL_MS = 6 * 60 * 60 * 1000;
+
+const stripHtml = (value = "") => value.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim();
+
+const getSearchTerms = (profile) => {
+  const terms = [
+    ...(profile.skills || []),
+    profile.headline,
+    ...(profile.experience || []).flatMap((item) => [item.role, item.title]),
+  ]
+    .filter(Boolean)
+    .join(" ")
+    .split(/[,|/\n]+|\s{2,}/)
+    .map((item) => item.trim())
+    .filter((item) => item.length > 1)
+    .slice(0, 8);
+
+  return [...new Set(terms)].join(" ").slice(0, 120);
+};
+
+const scoreJob = (job, terms) => {
+  const text = `${job.title} ${job.category} ${stripHtml(job.description)}`.toLowerCase();
+  return terms.reduce((score, term) => score + (text.includes(term.toLowerCase()) ? 1 : 0), 0);
+};
 
 const getJobs = async (req, res) => {
   try {
@@ -32,6 +59,56 @@ const getJob = async (req, res) => {
     res.status(200).json({ success: true, data: job });
   } catch (error) {
     res.status(500).json({ success: false, error: error.message });
+  }
+};
+
+const getRecommendedJobs = async (req, res) => {
+  try {
+    const profile = await CvProfile.findOne().sort({ updatedAt: -1 }).lean();
+    if (!profile) {
+      return res.status(404).json({ success: false, message: "Upload a CV in the admin panel before searching for matching jobs." });
+    }
+
+    const search = getSearchTerms(profile);
+    if (!search) {
+      return res.status(400).json({ success: false, message: "Add skills or a headline to your CV profile before searching for jobs." });
+    }
+
+    const cached = recommendationCache.get(search);
+    if (cached && Date.now() - cached.createdAt < CACHE_TTL_MS) {
+      return res.status(200).json({ success: true, data: cached.jobs, search, cached: true });
+    }
+
+    const sourceUrl = new URL("https://remotive.com/api/remote-jobs");
+    sourceUrl.searchParams.set("search", search);
+    sourceUrl.searchParams.set("limit", "50");
+    const response = await fetch(sourceUrl, { signal: AbortSignal.timeout(10000) });
+    if (!response.ok) throw new Error("The job provider is temporarily unavailable");
+    const payload = await response.json();
+    const terms = search.split(/\s+/).filter((term) => term.length > 1);
+    const jobs = (payload.jobs || [])
+      .map((job) => ({
+        externalId: String(job.id),
+        title: job.title,
+        company: job.company_name,
+        companyLogo: job.company_logo,
+        location: job.candidate_required_location || "Remote",
+        role: job.category || "Remote role",
+        skills: terms.filter((term) => `${job.title} ${stripHtml(job.description)}`.toLowerCase().includes(term.toLowerCase())),
+        jobType: job.job_type || "remote",
+        description: stripHtml(job.description).slice(0, 450),
+        applyUrl: job.url,
+        sourcePlatform: "Remotive",
+        postedAt: job.publication_date,
+        matchScore: scoreJob(job, terms),
+      }))
+      .sort((a, b) => b.matchScore - a.matchScore || new Date(b.postedAt) - new Date(a.postedAt))
+      .slice(0, 20);
+
+    recommendationCache.set(search, { createdAt: Date.now(), jobs });
+    res.status(200).json({ success: true, data: jobs, search, cached: false });
+  } catch (error) {
+    res.status(502).json({ success: false, message: error.message || "Unable to fetch matching jobs right now." });
   }
 };
 
@@ -86,7 +163,7 @@ const applyToJob = async (req, res) => {
         .status(400)
         .json({ success: false, message: "Name and email are required" });
 
-    await sendMailSafe({
+    await sendEmail({
       from: `"Portfolio Jobs" <${process.env.SMTP_USER}>`,
       to: process.env.EMAIL_RECIPIENT || process.env.SMTP_USER,
       subject: `Application for ${job.title}`,
@@ -108,6 +185,7 @@ const applyToJob = async (req, res) => {
 const jobController = {
   getJobs,
   getJob,
+  getRecommendedJobs,
   createJob,
   updateJob,
   deleteJob,

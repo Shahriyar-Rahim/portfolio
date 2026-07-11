@@ -13,5 +13,12 @@ router.post(
   cvController.uploadCv,
 );
 router.patch("/profile", protectMiddleware.protect, cvController.updateProfile);
+router.post(
+  "/profile/image",
+  protectMiddleware.protect,
+  upload.single("image"),
+  cvController.uploadProfileImage,
+);
+router.delete("/profile/image", protectMiddleware.protect, cvController.removeProfileImage);
 
 export default router;

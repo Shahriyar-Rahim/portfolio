@@ -5,7 +5,7 @@ dotenv.config();
 
 const connectDB = async () => {
     try {
-        const conn = await mongoose.connect(process.env.MONGO_URI);
+        const conn = await mongoose.connect(process.env.MONGO_URI, { dbName: "portfoliodb" });
 
         console.log(`Connecting to: ${process.env.MONGO_URI.split('@')[1]}`);
 

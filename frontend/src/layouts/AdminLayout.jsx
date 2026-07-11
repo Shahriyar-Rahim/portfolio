@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { NavLink, Outlet } from "react-router";
+import { Link, NavLink, Outlet } from "react-router";
 import {
   HiOutlineViewGrid,
   HiOutlineMail,
@@ -16,6 +16,7 @@ import {
 } from "react-icons/hi";
 import { useLogout } from "../lib/hooks/useAuth";
 import { useAuthStore } from "../lib/stores/authStore";
+import ThemeToggle from "../components/ThemeToggle";
 
 const NAV = [
   { to: "/admin", label: "Overview", icon: HiOutlineViewGrid, end: true },
@@ -26,7 +27,9 @@ const NAV = [
   { to: "/admin/services", label: "Services", icon: HiOutlineCube },
   { to: "/admin/hero-status", label: "Hero Status", icon: HiOutlineCube },
   { to: "/admin/testimonials", label: "Testimonials", icon: HiOutlineChatAlt2 },
-  { to: "/admin/jobs", label: "Jobs", icon: "HiOutlineBookmark" },
+  { to: "/admin/jobs", label: "Jobs", icon: HiOutlineBookmark },
+  { to: "/admin/cv", label: "CV profile", icon: HiOutlineUserCircle },
+  { to: "/admin/about", label: "About", icon: HiOutlineUserCircle },
   { to: "/admin/account", label: "Account", icon: HiOutlineUserCircle },
 ];
 
@@ -47,8 +50,9 @@ export default function AdminLayout() {
       )}
 
       <aside className="hidden md:flex w-64 flex-col border-r border-line bg-surface p-6">
-        <div className="font-mono text-lg mb-10">
-          <span className="text-copper">&gt;</span>admin
+        <div className="mb-10 flex items-center justify-between font-mono text-lg">
+          <span><span className="text-copper">&gt;</span>admin</span>
+          <div className="flex items-center gap-2"><ThemeToggle /><Link to="/" className="rounded border border-line px-2 py-1 text-xs text-ink-dim hover:border-copper hover:text-copper-soft">home</Link></div>
         </div>
         <nav className="flex-1 flex flex-col gap-1">
           {NAV.map(({ to, label, icon: Icon, end }) => (
@@ -142,7 +146,7 @@ export default function AdminLayout() {
           >
             <HiOutlineMenu className="text-lg" />
           </button>
-          <span className="font-mono text-sm text-copper">&gt;admin</span>
+          <div className="flex items-center gap-2"><ThemeToggle /><Link to="/" className="font-mono text-xs text-copper">home</Link></div>
           <button
             onClick={() => logout.mutate()}
             className="font-mono text-xs text-ink-dim"

@@ -4,6 +4,7 @@ import toast from "react-hot-toast";
 import Modal from "../../components/admin/Modal";
 import FieldInput from "../../components/admin/FieldInput";
 import ResourceList from "../../components/admin/ResourceList";
+import JobBoard from "../../components/JobBoard";
 
 const emptyForm = {
   title: "",
@@ -21,6 +22,7 @@ export default function JobsAdmin() {
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [editing, setEditing] = useState(null);
+  const [modalOpen, setModalOpen] = useState(false);
   const { register, handleSubmit, reset, formState: { errors } } = useForm({ defaultValues: emptyForm });
 
   const loadJobs = async () => {
@@ -43,11 +45,13 @@ export default function JobsAdmin() {
   const openNew = () => {
     setEditing(null);
     reset(emptyForm);
+    setModalOpen(true);
   };
 
   const openEdit = (item) => {
     setEditing(item);
     reset({ ...item, skills: (item.skills || []).join(", ") });
+    setModalOpen(true);
   };
 
   const saveJob = async (values) => {
@@ -73,6 +77,7 @@ export default function JobsAdmin() {
       if (!res.ok) throw new Error(result?.message || "Unable to save job");
       toast.success(editing ? "Job updated" : "Job created");
       setEditing(null);
+      setModalOpen(false);
       loadJobs();
     } catch (error) {
       toast.error(error.message);
@@ -97,6 +102,7 @@ export default function JobsAdmin() {
 
   return (
     <div>
+      <JobBoard />
       <ResourceList
         title="Job opportunities"
         isLoading={loading}
@@ -111,8 +117,7 @@ export default function JobsAdmin() {
           </>
         )}
       />
-
-      <Modal open={!!editing || !editing && false} onClose={() => setEditing(null)} title={editing ? "Edit opportunity" : "New opportunity"}>
+      <Modal open={modalOpen} onClose={() => setModalOpen(false)} title={editing ? "Edit opportunity" : "New opportunity"}>
         <form onSubmit={handleSubmit(saveJob)} className="space-y-4">
           <FieldInput label="title" name="title" register={register} required error={errors.title} />
           <FieldInput label="company" name="company" register={register} required error={errors.company} />

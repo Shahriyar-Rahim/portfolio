@@ -19,6 +19,7 @@ import jobRoutes from "./routes/job.routes.js";
 import cvRoutes from "./routes/cv.routes.js";
 import githubRoutes from "./routes/github.routes.js";
 import authRecoveryRoutes from "./routes/authRecovery.routes.js";
+import aboutRoutes from "./routes/about.routes.js";
 import { authLimiter, generalLimiter } from "./middlewares/rateLimiter.js";
 
 dns.setServers(["8.8.8.8", "1.1.1.1"]);
@@ -63,6 +64,7 @@ app.use("/api/v1/jobs", jobRoutes);
 app.use("/api/v1/cv", cvRoutes);
 app.use("/api/v1/portfolio/github", githubRoutes);
 app.use("/api/v1/auth", authRecoveryRoutes);
+app.use("/api/v1/about", aboutRoutes);
 
 // 404 handler
 app.use((req, res) => {

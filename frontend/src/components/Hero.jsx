@@ -32,10 +32,14 @@ export default function Hero() {
     };
 
     loadHeroItems();
+    const timer = setInterval(loadHeroItems, 30000);
+    return () => clearInterval(timer);
   }, []);
 
   return (
-    <section className="relative min-h-screen flex items-center bg-circuit overflow-hidden pt-24 pb-16">
+    <section className="hero-shell relative min-h-screen flex items-center overflow-hidden pt-24 pb-16">
+      <div className="hero-orb hero-orb-one" />
+      <div className="hero-orb hero-orb-two" />
       <div className="pointer-events-none absolute inset-0 bg-linear-to-b from-transparent via-bg/40 to-bg" />
 
       <div className="relative mx-auto max-w-6xl w-full px-6 grid md:grid-cols-[1.2fr_1fr] gap-12 items-center">
@@ -55,7 +59,7 @@ export default function Hero() {
           <motion.h1
             variants={line}
             transition={{ duration: 0.5 }}
-            className="font-display text-4xl sm:text-5xl md:text-6xl font-semibold leading-[1.05] text-ink text-glow"
+            className="font-display text-5xl sm:text-6xl md:text-7xl font-semibold tracking-[-0.055em] leading-[0.98] text-ink text-glow"
           >
             Md. Shahriyar Rahim
           </motion.h1>
@@ -63,7 +67,7 @@ export default function Hero() {
           <motion.p
             variants={line}
             transition={{ duration: 0.5 }}
-            className="mt-5 font-mono text-base sm:text-lg text-ink-dim max-w-xl"
+            className="mt-6 max-w-xl text-base leading-8 text-ink-dim sm:text-lg"
           >
             Full-stack <span className="text-signal-soft">MERN</span> developer &amp;
             embedded systems tinkerer. I build web apps that ship, and firmware
@@ -90,7 +94,7 @@ export default function Hero() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.4 }}
-          className="rounded-2xl border border-line bg-surface/80 backdrop-blur-sm p-5 trace-border"
+          className="rounded-2xl border border-line bg-surface/85 shadow-2xl shadow-black/20 backdrop-blur-sm p-5 trace-border"
         >
           <div className="flex items-center gap-2 mb-4 border-b border-line pb-3">
             <span className="h-2.5 w-2.5 rounded-full bg-danger/70" />

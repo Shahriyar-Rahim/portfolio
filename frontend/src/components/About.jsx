@@ -1,49 +1,10 @@
+import { useEffect, useState } from "react";
 import RevealOnScroll from "./RevealOnScroll";
 import SectionHeading from "./SectionHeading";
-
+const API = import.meta.env.VITE_API_URL || "http://localhost:5000/api/v1";
+const fallback = { title: "Two disciplines, one engineer", intro: "I’m a Computer Science & Engineering student working full-stack on the MERN stack while maintaining a parallel interest in embedded systems and hardware.", details: "I like projects where both sides meet: real-time dashboards talking to real sensors, and APIs serving real-world data.", toolchain: [["frontend", "React, Tailwind"], ["backend", "Node.js, Express, MongoDB"], ["embedded", "ESP32, Arduino, C/C++"]].map(([label, value]) => ({ label, value })) };
 export default function About() {
-  return (
-    <section id="about" className="py-24 border-t border-line">
-      <div className="mx-auto max-w-6xl px-6">
-        <RevealOnScroll>
-          <SectionHeading index="01" subtitle="about" title="Two disciplines, one engineer" />
-        </RevealOnScroll>
-
-        <div className="grid md:grid-cols-2 gap-10">
-          <RevealOnScroll delay={0.05}>
-            <p className="text-ink-dim leading-relaxed">
-              I&rsquo;m a Computer Science &amp; Engineering student at Bangladesh Army
-              University of Science and Technology (BAUST), working full-stack
-              on the MERN stack — MongoDB, Express, React, Node — while
-              maintaining a parallel interest in embedded systems and hardware.
-            </p>
-            <p className="text-ink-dim leading-relaxed mt-4">
-              Day to day that means shipping production web applications for
-              clients and my university, and soldering together firmware for
-              ESP32-based devices in the evening. I like projects where both
-              sides meet: real-time dashboards talking to real sensors, APIs
-              serving data captured by actual hardware.
-            </p>
-          </RevealOnScroll>
-
-          <RevealOnScroll delay={0.15}>
-            <div className="rounded-lg border border-line bg-surface p-6 font-mono text-sm">
-              <p className="text-ink-muted mb-3">{"// core toolchain"}</p>
-              {[
-                ["frontend", "React, Redux Toolkit / RTK Query, Tailwind"],
-                ["backend", "Node.js, Express, MongoDB, Socket.io"],
-                ["embedded", "ESP32-S3, Arduino, FreeRTOS, C/C++"],
-                ["tooling", "Docker, Git, Cloudinary, Supabase"],
-              ].map(([k, v]) => (
-                <div key={k} className="flex flex-col sm:flex-row sm:items-baseline gap-x-3 py-1.5 border-b border-line-soft last:border-0">
-                  <span className="text-copper w-24 shrink-0">{k}:</span>
-                  <span className="text-ink-dim">{v}</span>
-                </div>
-              ))}
-            </div>
-          </RevealOnScroll>
-        </div>
-      </div>
-    </section>
-  );
+  const [about, setAbout] = useState(fallback);
+  useEffect(() => { let active = true; const load = () => fetch(`${API}/about`).then((res) => res.json()).then((data) => active && data.data && setAbout(data.data)).catch(() => {}); load(); const timer = setInterval(load, 30000); return () => { active = false; clearInterval(timer); }; }, []);
+  return <section id="about" className="border-t border-line py-24"><div className="mx-auto max-w-6xl px-6"><RevealOnScroll><SectionHeading index="01" subtitle="about" title={about.title || fallback.title} /></RevealOnScroll><div className="grid gap-10 md:grid-cols-2"><RevealOnScroll delay={0.05}><p className="leading-8 text-ink-dim">{about.intro || fallback.intro}</p><p className="mt-4 leading-8 text-ink-dim">{about.details || fallback.details}</p></RevealOnScroll><RevealOnScroll delay={0.15}><div className="rounded-lg border border-line bg-surface p-6 font-mono text-sm"><p className="mb-3 text-ink-muted">{"// core toolchain"}</p>{(about.toolchain?.length ? about.toolchain : fallback.toolchain).map((item) => <div key={item.label} className="flex flex-col gap-x-3 border-b border-line-soft py-2 last:border-0 sm:flex-row sm:items-baseline"><span className="w-24 shrink-0 text-copper">{item.label}:</span><span className="text-ink-dim">{item.value}</span></div>)}</div></RevealOnScroll></div></div></section>;
 }

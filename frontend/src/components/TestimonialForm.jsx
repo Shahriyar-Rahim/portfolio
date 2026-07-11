@@ -150,13 +150,16 @@ export default function TestimonialForm() {
                 <Link to="/testimonials" className="font-mono text-sm text-copper-soft hover:underline">
                   view all feedback →
                 </Link>
-                <button
-                  type="submit"
-                  disabled={isPending}
-                  className="rounded-md bg-copper px-5 py-2.5 font-mono text-sm text-bg font-medium transition-colors hover:bg-copper-soft disabled:opacity-60"
-                >
-                  {isPending ? "sending…" : "submit feedback"}
-                </button>
+                <div className="flex gap-3">
+                  <button type="button" onClick={() => { reset({ rating: 5 }); setFiles([]); }} className="rounded-md border border-line px-4 py-2.5 font-mono text-sm text-ink-dim hover:border-copper">reset</button>
+                  <button
+                    type="submit"
+                    disabled={isPending}
+                    className="rounded-md bg-copper px-5 py-2.5 font-mono text-sm text-bg font-medium transition-colors hover:bg-copper-soft disabled:opacity-60"
+                  >
+                    {isPending ? "sending…" : "submit feedback"}
+                  </button>
+                </div>
               </div>
             </form>
           </RevealOnScroll>

@@ -2,7 +2,7 @@ import Testimonial from "../models/testimonial.model.js";
 import {
   buildTestimonialEmailHtml,
   buildTestimonialThankYouHtml,
-  sendMailSafe,
+  sendEmail,
 } from "../configs/mailer.config.js";
 
 const addTestimonial = async (req, res) => {
@@ -29,25 +29,36 @@ const addTestimonial = async (req, res) => {
     });
 
     // Best-effort notifications — submission still succeeds either way.
-    const ownerEmail = process.env.EMAIL_RECIPIENT || process.env.SMTP_USER;
-    const senderEmail = process.env.EMAIL_USER || process.env.SMTP_USER;
-
-    await sendMailSafe({
-      from: `"Portfolio Testimonials" <${senderEmail}>`,
+    const ownerEmail = process.env.SMTP_USER;
+    const ownerNotification = await sendEmail({
       to: ownerEmail,
       subject: `New testimonial from ${clientName}`,
       text: `${clientName} left a testimonial (${rating || "no"} star rating):\n\n${feedback}`,
       html: buildTestimonialEmailHtml({ clientName, feedback, rating }),
     });
 
+    // 3. Log errors if the owner email fails
+    if (!ownerNotification.success) {
+      console.warn(
+        "⚠️ Failed to send owner notification:",
+        ownerNotification.error,
+      );
+    }
+    
     if (email) {
-      await sendMailSafe({
-        from: `"Md. Shahriyar Rahim" <${senderEmail}>`,
+      const clientNotification = await sendEmail({
         to: email,
         subject: "Thank you for your feedback!",
         text: `Hi ${clientName},\n\nThank you for taking the time to leave a testimonial! It's currently pending review and will appear on the site shortly.\n\nBest regards,\nMd. Shahriyar Rahim`,
         html: buildTestimonialThankYouHtml({ clientName }),
       });
+
+      if (!clientNotification.success) {
+        console.warn(
+          "Failed to send client thank-you email:",
+          clientNotification.error,
+        );
+      }
     }
 
     res.status(201).json({

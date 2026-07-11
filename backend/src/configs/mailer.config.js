@@ -1,7 +1,8 @@
 import nodemailer from "nodemailer";
+import dotenv from "dotenv";
 
 const transporter = nodemailer.createTransport({
-  host: process.env.SMTP_HOST || "smtp.gmail.com",
+  host: process.env.SMTP_HOST || "smtp.mail.me.com",
   port: Number(process.env.SMTP_PORT || 587),
   secure: Number(process.env.SMTP_PORT || 587) === 465,
   auth:
@@ -136,14 +137,13 @@ transporter.verify((error) => {
   }
 });
 
-export const sendMailSafe = async (mailOptions) => {
-  if (!process.env.SMTP_USER || !process.env.SMTP_PASS) {
-    console.warn("SMTP credentials not configured; skipping email delivery.");
-    return { success: false, error: "SMTP credentials not configured" };
-  }
-
+export const sendEmail = async (mailOptions) => {
   try {
-    const info = await transporter.sendMail(mailOptions);
+    const info = await transporter.sendMail({
+      ...mailOptions,
+      from: `"Portfolio" <${process.env.SMTP_USER}>`,
+    });
+
     return { success: true, messageId: info.messageId };
   } catch (error) {
     console.error("Email send failed:", error.message);

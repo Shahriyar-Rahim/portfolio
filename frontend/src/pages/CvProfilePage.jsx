@@ -33,10 +33,13 @@ export default function CvProfilePage() {
     <div className="mx-auto max-w-5xl px-6 py-24">
       <div className="rounded-3xl border border-line bg-surface p-8">
         <div className="flex flex-col gap-6 md:flex-row md:justify-between">
-          <div>
+          <div className="flex gap-5">
+            {profile.profileImageUrl ? <img src={profile.profileImageUrl} alt={profile.name || "Profile"} className="h-20 w-20 shrink-0 rounded-2xl object-cover" /> : null}
+            <div>
             <p className="font-mono text-xs uppercase tracking-[0.3em] text-copper-soft">my CV</p>
             <h1 className="mt-2 font-display text-3xl text-ink">{profile.name || "Professional profile"}</h1>
             <p className="mt-3 max-w-2xl text-sm leading-7 text-ink-dim">{profile.summary || profile.headline || "A concise profile generated from the uploaded CV."}</p>
+            </div>
           </div>
           <div className="rounded-xl border border-line bg-bg/70 p-4 text-sm text-ink-dim">
             {profile.email ? <p>{profile.email}</p> : null}

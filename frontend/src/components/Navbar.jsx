@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { HiMenu, HiX } from "react-icons/hi";
 import { Link } from "react-router";
+import ThemeToggle from "./ThemeToggle";
 
 const LINKS = [
   { to: "/#about", label: "about" },
@@ -37,23 +38,24 @@ export default function Navbar() {
 
         <div className="hidden md:flex items-center gap-8">
           {LINKS.map((link) => (
-            <a
+            <Link
               key={link.label}
-              href={link.to}
+              to={link.to}
               className="font-mono text-sm text-ink-dim hover:text-copper-soft transition-colors"
             >
               {link.label}
-            </a>
+            </Link>
           ))}
+          <ThemeToggle />
         </div>
 
-        <button
+        <div className="flex items-center gap-3 md:hidden"><ThemeToggle /><button
           className="md:hidden text-ink text-2xl"
           onClick={() => setOpen((v) => !v)}
           aria-label="Toggle menu"
         >
           {open ? <HiX /> : <HiMenu />}
-        </button>
+        </button></div>
       </nav>
 
       {open && (
@@ -64,14 +66,14 @@ export default function Navbar() {
           className="md:hidden border-t border-line bg-bg px-6 py-4 flex flex-col gap-4"
         >
           {LINKS.map((link) => (
-            <a
+            <Link
               key={link.label}
-              href={link.to}
+              to={link.to}
               onClick={() => setOpen(false)}
               className="font-mono text-sm text-ink-dim"
             >
               {link.label}
-            </a>
+            </Link>
           ))}
         </motion.div>
       )}

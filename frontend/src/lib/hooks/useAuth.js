@@ -50,10 +50,10 @@ export function useRecovery() {
   });
 }
 
-export function useVerifyRecovery() {
+export function useResetPassword() {
   return useMutation({
-    mutationFn: (payload) => authApi.verifyRecovery(payload),
-    onSuccess: () => toast.success("Recovery verified. You can now sign in."),
+    mutationFn: (payload) => authApi.resetPassword(payload),
+    onSuccess: () => toast.success("Password changed. You can now sign in."),
     onError: (err) => toast.error(err.message),
   });
 }

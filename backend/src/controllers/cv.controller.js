@@ -1,4 +1,4 @@
-import pdfParse from "pdf-parse";
+import { PDFParse } from "pdf-parse";
 import CvProfile from "../models/cvProfile.model.js";
 
 const extractProfileFromText = (text) => {
@@ -43,8 +43,13 @@ const readUploadedText = async (fileUrl, mimetype) => {
     const buffer = Buffer.from(await response.arrayBuffer());
 
     if (mimetype?.includes("pdf")) {
-      const parsed = await pdfParse(buffer);
-      return parsed.text || "";
+      const parser = new PDFParse({ data: buffer });
+      try {
+        const parsed = await parser.getText();
+        return parsed.text || "";
+      } finally {
+        await parser.destroy();
+      }
     }
 
     return buffer.toString("utf8");
@@ -109,5 +114,41 @@ const updateProfile = async (req, res) => {
   }
 };
 
-const cvController = { getProfile, uploadCv, updateProfile };
+const uploadProfileImage = async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ success: false, message: "Profile image is required" });
+    }
+    if (!req.file.mimetype?.startsWith("image/")) {
+      return res.status(400).json({ success: false, message: "Please upload an image file" });
+    }
+
+    const profile = await CvProfile.findOneAndUpdate(
+      {},
+      { profileImageUrl: req.file.path },
+      { upsert: true, new: true, setDefaultsOnInsert: true },
+    );
+    res.status(200).json({ success: true, data: profile });
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+};
+
+const removeProfileImage = async (req, res) => {
+  try {
+    const profile = await CvProfile.findOneAndUpdate(
+      {},
+      { $unset: { profileImageUrl: 1 } },
+      { new: true },
+    );
+    if (!profile) {
+      return res.status(404).json({ success: false, message: "CV profile not found" });
+    }
+    res.status(200).json({ success: true, data: profile });
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+};
+
+const cvController = { getProfile, uploadCv, updateProfile, uploadProfileImage, removeProfileImage };
 export default cvController;

@@ -3,7 +3,7 @@ import {
   buildContactEmailHtml,
   buildReplyEmailHtml,
   buildThankYouEmailHtml,
-  sendMailSafe,
+  sendEmail,
 } from "../configs/mailer.config.js";
 
 const makeInbox = async (req, res) => {
@@ -15,6 +15,13 @@ const makeInbox = async (req, res) => {
         success: false,
         message: "All fields are required",
       });
+    }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Invalid email format" });
     }
 
     // Check if this email sent a message in the last 1 hour
@@ -39,10 +46,10 @@ const makeInbox = async (req, res) => {
       message,
     });
 
-    const ownerEmail = process.env.EMAIL_RECIPIENT || process.env.SMTP_USER;
-    const senderEmail = process.env.EMAIL_USER || process.env.SMTP_USER;
+    const ownerEmail = process.env.SMTP_USER;
+    const senderEmail = process.env.SMTP_USER;
 
-    const ownerMail = await sendMailSafe({
+    const ownerMail = await sendEmail({
       from: `"Portfolio Contact" <${senderEmail}>`,
       to: ownerEmail,
       replyTo: email,
@@ -55,7 +62,7 @@ const makeInbox = async (req, res) => {
       console.warn("Contact notification email failed:", ownerMail.error);
     }
 
-    const senderMail = await sendMailSafe({
+    const senderMail = await sendEmail({
       from: `"Md. Shahriyar Rahim" <${senderEmail}>`,
       to: email,
       subject: "Message Received - Thank You!",
@@ -144,8 +151,8 @@ const replyInbox = async (req, res) => {
     }
 
     // 2. Send the email to the user
-    const senderEmail = process.env.EMAIL_USER || process.env.SMTP_USER;
-    const replyMail = await sendMailSafe({
+    const senderEmail = process.env.SMTP_USER;
+    const replyMail = await sendEmail({
       from: `"Md. Shahriyar Rahim" <${senderEmail}>`,
       to: inbox.email, // Use the email from the original document
       subject: `Re: ${inbox.subject}`,

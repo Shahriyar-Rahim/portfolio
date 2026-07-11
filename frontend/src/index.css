@@ -100,6 +100,36 @@
     background-size: 42px 42px;
   }
 
+  .hero-shell {
+    background:
+      radial-gradient(circle at 16% 20%, color-mix(in srgb, var(--color-copper) 14%, transparent), transparent 29rem),
+      radial-gradient(circle at 88% 72%, color-mix(in srgb, var(--color-signal) 10%, transparent), transparent 27rem),
+      var(--color-bg);
+  }
+
+  .hero-shell::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    opacity: 0.42;
+    background-image:
+      linear-gradient(var(--color-line-soft) 1px, transparent 1px),
+      linear-gradient(90deg, var(--color-line-soft) 1px, transparent 1px);
+    background-size: 52px 52px;
+    mask-image: linear-gradient(to bottom, black, transparent 82%);
+    pointer-events: none;
+  }
+
+  .hero-orb {
+    position: absolute;
+    border: 1px solid color-mix(in srgb, var(--color-copper) 24%, transparent);
+    border-radius: 999px;
+    pointer-events: none;
+  }
+
+  .hero-orb-one { width: 25rem; height: 25rem; right: 8%; top: 12%; }
+  .hero-orb-two { width: 15rem; height: 15rem; right: 20%; top: 28%; border-color: color-mix(in srgb, var(--color-signal) 22%, transparent); }
+
   .text-glow {
     text-shadow: 0 0 24px color-mix(in srgb, var(--color-copper) 45%, transparent);
   }
@@ -128,4 +158,22 @@
   .trace-border:hover::before {
     opacity: 1;
   }
+}
+
+/* Theme variables are consumed by Tailwind's semantic colour utilities. */
+:root[data-theme="light"] {
+  --color-ink: #2d2442;
+  --color-ink-dim: #5f5574;
+  --color-ink-muted: #857a96;
+  --color-bg: #fcfaf4;
+  --color-surface: #ffffff;
+  --color-surface-raised: #f5f0e6;
+  --color-line: #e5ddeb;
+  --color-line-soft: #f0eaf3;
+  --color-copper: #be7b17;
+  --color-copper-soft: #9e6310;
+  --color-signal: #58458a;
+  --color-signal-soft: #66539a;
+  --color-ok: #28794e;
+  --color-danger: #b3484e;
 }

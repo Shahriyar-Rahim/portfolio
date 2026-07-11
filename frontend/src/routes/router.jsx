@@ -10,6 +10,8 @@ import TestimonialsPage from "../pages/TestimonialsPage";
 import WorkDetailPage from "../pages/WorkDetailPage";
 import CvProfilePage from "../pages/CvProfilePage";
 import Login from "../pages/Login";
+import ResetPassword from "../pages/ResetPassword";
+import ProjectsPage from "../pages/ProjectsPage";
 import NotFound from "../pages/NotFound";
 import Dashboard from "../pages/admin/Dashboard";
 import Inbox from "../pages/admin/Inbox";
@@ -20,6 +22,8 @@ import ServicesAdmin from "../pages/admin/Services";
 import HeroStatusAdmin from "../pages/admin/HeroStatus";
 import TestimonialsAdmin from "../pages/admin/Testimonials";
 import JobsAdmin from "../pages/admin/Jobs";
+import CvProfileAdmin from "../pages/admin/CvProfile";
+import AboutAdmin from "../pages/admin/About";
 
 export const router = createBrowserRouter([
   {
@@ -31,9 +35,11 @@ export const router = createBrowserRouter([
       { path: "/testimonials", element: <TestimonialsPage /> },
       { path: "/works/:repo", element: <WorkDetailPage /> },
       { path: "/cv", element: <CvProfilePage /> },
+      { path: "/projects", element: <ProjectsPage /> },
     ],
   },
   { path: "/login", element: <Login /> },
+  { path: "/reset-password", element: <ResetPassword /> },
   {
     path: "/admin",
     element: <ProtectedRoute />,
@@ -50,6 +56,8 @@ export const router = createBrowserRouter([
           { path: "hero-status", element: <HeroStatusAdmin /> },
           { path: "testimonials", element: <TestimonialsAdmin /> },
           { path: "jobs", element: <JobsAdmin /> },
+          { path: "cv", element: <CvProfileAdmin /> },
+          { path: "about", element: <AboutAdmin /> },
           { path: "account", element: <AccountAdmin /> },
         ],
       },

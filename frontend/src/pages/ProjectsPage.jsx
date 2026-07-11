@@ -1,0 +1,9 @@
+import { useEffect, useState } from "react";
+import { ProjectCard } from "../components/RecentWorks";
+
+const API = import.meta.env.VITE_API_URL || "http://localhost:5000/api/v1";
+export default function ProjectsPage() {
+  const [repos, setRepos] = useState([]); const [loading, setLoading] = useState(true); const [error, setError] = useState(""); const [page, setPage] = useState(1); const [pagination, setPagination] = useState({ page: 1, totalPages: 1 });
+  useEffect(() => { setLoading(true); fetch(`${API}/portfolio/github/repos?limit=6&page=${page}`).then((res) => res.json()).then((payload) => { setRepos(payload.data || []); setPagination(payload.pagination || { page: 1, totalPages: 1 }); setError(payload.success === false ? payload.message : ""); }).catch(() => setError("Unable to load GitHub projects right now.")).finally(() => setLoading(false)); }, [page]);
+  return <div className="mx-auto max-w-6xl px-6 py-32"><p className="font-mono text-xs uppercase tracking-[0.3em] text-copper-soft">GitHub portfolio</p><h1 className="mt-3 font-display text-4xl text-ink">All projects</h1>{loading ? <p className="mt-8 text-ink-dim">Loading projects…</p> : null}{error ? <p className="mt-8 text-danger">{error}</p> : null}<div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">{repos.map((repo) => <ProjectCard key={repo.id} repo={repo} />)}</div>{pagination.totalPages > 1 ? <div className="mt-10 flex items-center justify-center gap-4"><button disabled={page === 1} onClick={() => setPage((value) => value - 1)} className="rounded-md border border-line px-4 py-2 text-sm text-ink-dim disabled:opacity-40">Previous</button><span className="font-mono text-sm text-ink-muted">{pagination.page} / {pagination.totalPages}</span><button disabled={page === pagination.totalPages} onClick={() => setPage((value) => value + 1)} className="rounded-md border border-line px-4 py-2 text-sm text-ink-dim disabled:opacity-40">Next</button></div> : null}</div>;
+}
