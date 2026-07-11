@@ -71,6 +71,10 @@ app.use("/api/v1/portfolio/github", githubRoutes);
 app.use("/api/v1/auth/recovery", authRecoveryRoutes);
 app.use("/api/v1/about", aboutRoutes);
 
+app.get("/", (req, res) => {
+  res.send("API is running...");
+});
+
 app.use((err, req, res, next) => {
   if (err instanceof multer.MulterError) {
     if (err.code === "LIMIT_FILE_SIZE") {
@@ -88,11 +92,6 @@ app.use((err, req, res, next) => {
   }
 
   next();
-});
- 
-
-app.get("/", (req, res) => {
-  res.send("API is running...");
 });
 
 app.use((err, req, res, next) => {
