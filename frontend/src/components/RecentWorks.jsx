@@ -17,11 +17,13 @@ export default function RecentWorks() {
 
   useEffect(() => {
     let cancelled = false;
-    fetch("https://api.github.com/users/Shahriyar-Rahim/repos?per_page=6&sort=updated")
+    const baseUrl = import.meta.env.VITE_API_URL || "http://localhost:5000/api/v1";
+
+    fetch(`${baseUrl}/portfolio/github/repos`)
       .then((res) => res.json())
       .then((data) => {
-        if (!cancelled && Array.isArray(data)) {
-          const normalized = data
+        if (!cancelled && Array.isArray(data?.data)) {
+          const normalized = data.data
             .filter((repo) => repo?.name)
             .slice(0, 6)
             .map((repo) => ({
@@ -50,8 +52,8 @@ export default function RecentWorks() {
         <div className="relative mt-8 rounded-2xl border border-line bg-surface/70 p-4 sm:p-6">
           <motion.div
             initial={{ x: 0 }}
-            animate={{ x: [0, -50] }}
-            transition={{ duration: 24, repeat: Infinity, ease: "linear" }}
+            animate={{ x: [0, -1200] }}
+            transition={{ duration: 38, repeat: Infinity, ease: "linear" }}
             className="flex w-max gap-4"
           >
             {[...repos, ...repos].map((repo, index) => (

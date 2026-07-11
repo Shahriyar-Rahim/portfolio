@@ -2,11 +2,13 @@ import { createBrowserRouter } from "react-router";
 import MainLayout from "../layouts/MainLayout";
 import AdminLayout from "../layouts/AdminLayout";
 import ProtectedRoute from "./ProtectedRoute";
+import AccountAdmin from "../pages/admin/Account";
 import Home from "../pages/Home";
 import BlogList from "../pages/BlogList";
 import BlogDetail from "../pages/BlogDetail";
 import TestimonialsPage from "../pages/TestimonialsPage";
 import WorkDetailPage from "../pages/WorkDetailPage";
+import CvProfilePage from "../pages/CvProfilePage";
 import Login from "../pages/Login";
 import NotFound from "../pages/NotFound";
 import Dashboard from "../pages/admin/Dashboard";
@@ -17,6 +19,7 @@ import EducationAdmin from "../pages/admin/Education";
 import ServicesAdmin from "../pages/admin/Services";
 import HeroStatusAdmin from "../pages/admin/HeroStatus";
 import TestimonialsAdmin from "../pages/admin/Testimonials";
+import JobsAdmin from "../pages/admin/Jobs";
 
 export const router = createBrowserRouter([
   {
@@ -27,6 +30,7 @@ export const router = createBrowserRouter([
       { path: "/blog/:id", element: <BlogDetail /> },
       { path: "/testimonials", element: <TestimonialsPage /> },
       { path: "/works/:repo", element: <WorkDetailPage /> },
+      { path: "/cv", element: <CvProfilePage /> },
     ],
   },
   { path: "/login", element: <Login /> },
@@ -45,6 +49,8 @@ export const router = createBrowserRouter([
           { path: "services", element: <ServicesAdmin /> },
           { path: "hero-status", element: <HeroStatusAdmin /> },
           { path: "testimonials", element: <TestimonialsAdmin /> },
+          { path: "jobs", element: <JobsAdmin /> },
+          { path: "account", element: <AccountAdmin /> },
         ],
       },
     ],

@@ -29,7 +29,7 @@ const updateEducation = async (req, res) => {
     const updated = await Education.findOneAndUpdate(
       { _id: req.params.id, user: req.user._id },
       req.body, // This will update whatever fields are passed
-      { new: true },
+      { returnDocument: "after" },
     );
     res.json(updated);
   } catch (error) {
@@ -50,13 +50,11 @@ const getAllEducations = async (req, res) => {
       data: educations,
     });
   } catch (error) {
-    res
-      .status(500)
-      .json({
-        success: false,
-        message: "Something went wrong",
-        error: error.message,
-      });
+    res.status(500).json({
+      success: false,
+      message: "Something went wrong",
+      error: error.message,
+    });
   }
 };
 
@@ -80,13 +78,11 @@ const deleteEducation = async (req, res) => {
       data: deleted,
     });
   } catch (error) {
-    res
-      .status(500)
-      .json({
-        success: false,
-        message: "Something went wrong",
-        error: error.message,
-      });
+    res.status(500).json({
+      success: false,
+      message: "Something went wrong",
+      error: error.message,
+    });
   }
 };
 

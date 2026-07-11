@@ -1,5 +1,9 @@
 import Testimonial from "../models/testimonial.model.js";
-import { sendMailSafe } from "../configs/mailer.config.js";
+import {
+  buildTestimonialEmailHtml,
+  buildTestimonialThankYouHtml,
+  sendMailSafe,
+} from "../configs/mailer.config.js";
 
 const addTestimonial = async (req, res) => {
   try {
@@ -33,6 +37,7 @@ const addTestimonial = async (req, res) => {
       to: ownerEmail,
       subject: `New testimonial from ${clientName}`,
       text: `${clientName} left a testimonial (${rating || "no"} star rating):\n\n${feedback}`,
+      html: buildTestimonialEmailHtml({ clientName, feedback, rating }),
     });
 
     if (email) {
@@ -41,6 +46,7 @@ const addTestimonial = async (req, res) => {
         to: email,
         subject: "Thank you for your feedback!",
         text: `Hi ${clientName},\n\nThank you for taking the time to leave a testimonial! It's currently pending review and will appear on the site shortly.\n\nBest regards,\nMd. Shahriyar Rahim`,
+        html: buildTestimonialThankYouHtml({ clientName }),
       });
     }
 
@@ -76,7 +82,7 @@ const setTestimonialApproval = async (req, res) => {
     const testimonial = await Testimonial.findByIdAndUpdate(
       id,
       { isApproved: !!isApproved },
-      { new: true },
+      { returnDocument: "after" },
     );
 
     if (!testimonial)
@@ -118,7 +124,7 @@ const updateTestimonial = async (req, res) => {
     const testimonial = await Testimonial.findByIdAndUpdate(
       id,
       { clientName, address, feedback, rating },
-      { new: true, runValidators: true },
+      { returnDocument: "after", runValidators: true },
     );
 
     if (!testimonial)

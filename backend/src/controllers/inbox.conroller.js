@@ -1,5 +1,10 @@
 import Inbox from "../models/inbox.model.js";
-import { sendMailSafe } from "../configs/mailer.config.js";
+import {
+  buildContactEmailHtml,
+  buildReplyEmailHtml,
+  buildThankYouEmailHtml,
+  sendMailSafe,
+} from "../configs/mailer.config.js";
 
 const makeInbox = async (req, res) => {
   try {
@@ -43,6 +48,7 @@ const makeInbox = async (req, res) => {
       replyTo: email,
       subject: `New Message: ${subject}`,
       text: `Message from ${name}:\n\n${message}`,
+      html: buildContactEmailHtml({ name, subject, message }),
     });
 
     if (!ownerMail.success) {
@@ -54,6 +60,7 @@ const makeInbox = async (req, res) => {
       to: email,
       subject: "Message Received - Thank You!",
       text: `Hi ${name},\n\nThank you for reaching out! I have received your message regarding "${subject}" and will get back to you as soon as possible.\n\nBest regards,\nMd. Shahriyar Rahim`,
+      html: buildThankYouEmailHtml({ name, subject }),
     });
 
     if (!senderMail.success) {
@@ -143,6 +150,7 @@ const replyInbox = async (req, res) => {
       to: inbox.email, // Use the email from the original document
       subject: `Re: ${inbox.subject}`,
       text: replyMessage,
+      html: buildReplyEmailHtml({ recipientName: inbox.name, replyMessage }),
     });
 
     if (!replyMail.success) {

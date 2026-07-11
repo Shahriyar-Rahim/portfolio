@@ -4,9 +4,11 @@ const createBlog = async (req, res) => {
   try {
     const blogData = { ...req.body };
 
-    // req.file comes from multer (upload.single("image")) with
-    // CloudinaryStorage — its `.path` is already the hosted URL.
-    if (req.file) blogData.img = req.file.path;
+    if (req.file?.path) {
+      blogData.img = req.file.path;
+    } else if (!req.body.img && req.body.image) {
+      blogData.img = req.body.image;
+    }
 
     if (!blogData.img)
       return res
@@ -40,10 +42,9 @@ const allBlog = async (req, res) => {
       .sort({ createdAt: -1 })
       .skip(skip)
       .limit(limit);
-    
+
     const count = await Blog.countDocuments();
     const totalPage = Math.ceil(count / limit);
-
 
     if (!blogs)
       return res
@@ -57,8 +58,8 @@ const allBlog = async (req, res) => {
         total: count,
         page,
         limit,
-        totalPage
-      }
+        totalPage,
+      },
     });
   } catch (error) {
     res.status(500).json({
@@ -81,26 +82,22 @@ const singleBlog = async (req, res) => {
       return res
         .status(404)
         .json({ success: false, message: "Blog not found" });
-    res
-      .status(200)
-      .json({
-        success: true,
-        message: "Blog fetched successfully",
-        data: blog,
-      });
+    res.status(200).json({
+      success: true,
+      message: "Blog fetched successfully",
+      data: blog,
+    });
   } catch (error) {
-    res
-      .status(500)
-      .json({
-        success: false,
-        message: "Something went wrong",
-        error: error.message,
-      });
+    res.status(500).json({
+      success: false,
+      message: "Something went wrong",
+      error: error.message,
+    });
   }
 };
 
 const updateBlog = async (req, res) => {
-    try {
+  try {
     const { id } = req.params;
     const { title, category, description, shortDescription } = req.body;
     if (!id)
@@ -109,66 +106,60 @@ const updateBlog = async (req, res) => {
         .json({ success: false, message: "No id provided" });
 
     const updateData = { title, category, description, shortDescription };
-    // Only overwrite the image if a new one was uploaded — otherwise keep the existing one.
-    if (req.file) updateData.img = req.file.path;
 
-    const blog = await Blog.findByIdAndUpdate(
-        id,
-        updateData,
-        {
-            new: true
-        }
-    );
+    if (req.file?.path) {
+      updateData.img = req.file.path;
+    } else if (req.body.img) {
+      updateData.img = req.body.img;
+    }
+
+    const blog = await Blog.findByIdAndUpdate(id, updateData, {
+      returnDocument: "after",
+    });
     if (!blog)
       return res
         .status(404)
         .json({ success: false, message: "Blog not found" });
-    res
-      .status(200)
-      .json({
-        success: true,
-        message: "Blog updated successfully",
-        data: blog,
-      });
+    res.status(200).json({
+      success: true,
+      message: "Blog updated successfully",
+      data: blog,
+    });
   } catch (error) {
-    res
-      .status(500)
-      .json({
-        success: false,
-        message: "Something went wrong",
-        error: error.message,
-      });
+    res.status(500).json({
+      success: false,
+      message: "Something went wrong",
+      error: error.message,
+    });
   }
 };
 
 const deleteBlog = async (req, res) => {
-    try {
-        const { id } = req.params;
-        if (!id){
-            return res
-            .status(400)
-            .json({ success: false, message: "No id provided" });
-        }
-        const result = await Blog.findByIdAndDelete(id);
-        if (!result){
-            return res
-            .status(404)
-            .json({ success: false, message: "Blog not found" });
-        }
-        res
-        .status(200)
-        .json({
-            success: true,
-            message: "Blog deleted successfully",
-            data: result,
-        });
-    } catch (error) {
-        res.status(500).json({
-            success: false,
-            message: "Something went wrong",
-            error: error.message,
-        })
+  try {
+    const { id } = req.params;
+    if (!id) {
+      return res
+        .status(400)
+        .json({ success: false, message: "No id provided" });
     }
+    const result = await Blog.findByIdAndDelete(id);
+    if (!result) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Blog not found" });
+    }
+    res.status(200).json({
+      success: true,
+      message: "Blog deleted successfully",
+      data: result,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: "Something went wrong",
+      error: error.message,
+    });
+  }
 };
 
 const blogControllers = {

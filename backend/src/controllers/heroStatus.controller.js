@@ -15,7 +15,9 @@ const createHeroStatus = async (req, res) => {
     const { name, detail, status, order } = req.body;
 
     if (!name || !detail)
-      return res.status(400).json({ success: false, message: "Name and detail are required" });
+      return res
+        .status(400)
+        .json({ success: false, message: "Name and detail are required" });
 
     const item = await HeroStatus.create({
       user: req.user._id,
@@ -37,7 +39,7 @@ const updateHeroStatus = async (req, res) => {
     const item = await HeroStatus.findOneAndUpdate(
       { _id: id, user: req.user._id },
       { $set: req.body },
-      { new: true, runValidators: true },
+      { returnDocument: "after", runValidators: true },
     );
 
     if (!item)
@@ -52,7 +54,10 @@ const updateHeroStatus = async (req, res) => {
 const deleteHeroStatus = async (req, res) => {
   try {
     const { id } = req.params;
-    const item = await HeroStatus.findOneAndDelete({ _id: id, user: req.user._id });
+    const item = await HeroStatus.findOneAndDelete({
+      _id: id,
+      user: req.user._id,
+    });
 
     if (!item)
       return res.status(404).json({ success: false, message: "Not found" });

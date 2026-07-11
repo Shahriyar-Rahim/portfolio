@@ -54,7 +54,7 @@ const updateService = async (req, res) => {
       { _id: id, user: userId },
       { $set: updatePayload },
       {
-        new: true,
+        returnDocument: "after",
         runValidators: true,
       },
     );

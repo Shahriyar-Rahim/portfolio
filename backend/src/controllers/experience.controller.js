@@ -50,13 +50,11 @@ const getAllExperiences = async (req, res) => {
       data: experiences,
     });
   } catch (error) {
-    res
-      .status(500)
-      .json({
-        success: false,
-        message: "Something went wrong",
-        error: error.message,
-      });
+    res.status(500).json({
+      success: false,
+      message: "Something went wrong",
+      error: error.message,
+    });
   }
 };
 
@@ -85,7 +83,7 @@ const updateExperience = async (req, res) => {
     const updated = await Experience.findOneAndUpdate(
       { _id: id, user: user._id },
       updatedData,
-      { new: true },
+      { returnDocument: "after" },
     );
 
     res.status(200).json({
@@ -94,13 +92,11 @@ const updateExperience = async (req, res) => {
       data: updated,
     });
   } catch (error) {
-    res
-      .status(500)
-      .json({
-        success: false,
-        message: "Something went wrong",
-        error: error.message,
-      });
+    res.status(500).json({
+      success: false,
+      message: "Something went wrong",
+      error: error.message,
+    });
   }
 };
 
@@ -130,13 +126,11 @@ const deleteExperience = async (req, res) => {
       message: "Experience deleted successfully",
     });
   } catch (error) {
-    res
-      .status(500)
-      .json({
-        success: false,
-        message: "Something went wrong",
-        error: error.message,
-      });
+    res.status(500).json({
+      success: false,
+      message: "Something went wrong",
+      error: error.message,
+    });
   }
 };
 

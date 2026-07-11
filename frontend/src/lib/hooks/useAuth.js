@@ -42,6 +42,22 @@ export function useLogin() {
   });
 }
 
+export function useRecovery() {
+  return useMutation({
+    mutationFn: (payload) => authApi.requestRecovery(payload),
+    onSuccess: () => toast.success("Recovery instructions sent."),
+    onError: (err) => toast.error(err.message),
+  });
+}
+
+export function useVerifyRecovery() {
+  return useMutation({
+    mutationFn: (payload) => authApi.verifyRecovery(payload),
+    onSuccess: () => toast.success("Recovery verified. You can now sign in."),
+    onError: (err) => toast.error(err.message),
+  });
+}
+
 export function useLogout() {
   const clear = useAuthStore((s) => s.clear);
   const queryClient = useQueryClient();

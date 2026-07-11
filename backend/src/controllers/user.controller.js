@@ -101,11 +101,53 @@ const me = async (req, res) => {
   });
 };
 
+const updateAccount = async (req, res) => {
+  try {
+    const { email, password } = req.body;
+    const user = await User.findById(req.user._id);
+
+    if (!user) {
+      return res
+        .status(404)
+        .json({ success: false, message: "User not found" });
+    }
+
+    if (email) {
+      const existing = await User.findOne({ email });
+      if (existing && existing._id.toString() !== user._id.toString()) {
+        return res
+          .status(409)
+          .json({ success: false, message: "Email already in use" });
+      }
+      user.email = email;
+    }
+
+    if (password) {
+      user.password = password;
+    }
+
+    await user.save();
+
+    res
+      .status(200)
+      .json({ success: true, message: "Account updated successfully" });
+  } catch (error) {
+    res
+      .status(500)
+      .json({
+        success: false,
+        message: "Something went wrong",
+        error: error.message,
+      });
+  }
+};
+
 const userControlers = {
   register,
   login,
   logout,
   me,
+  updateAccount,
 };
 
 export default userControlers;

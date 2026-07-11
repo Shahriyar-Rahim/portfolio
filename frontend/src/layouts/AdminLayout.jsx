@@ -8,9 +8,11 @@ import {
   HiOutlineAcademicCap,
   HiOutlineCube,
   HiOutlineChatAlt2,
+  HiOutlineUserCircle,
   HiOutlineLogout,
   HiOutlineMenu,
   HiOutlineX,
+  HiOutlineBookmark
 } from "react-icons/hi";
 import { useLogout } from "../lib/hooks/useAuth";
 import { useAuthStore } from "../lib/stores/authStore";
@@ -24,6 +26,8 @@ const NAV = [
   { to: "/admin/services", label: "Services", icon: HiOutlineCube },
   { to: "/admin/hero-status", label: "Hero Status", icon: HiOutlineCube },
   { to: "/admin/testimonials", label: "Testimonials", icon: HiOutlineChatAlt2 },
+  { to: "/admin/jobs", label: "Jobs", icon: "HiOutlineBookmark" },
+  { to: "/admin/account", label: "Account", icon: HiOutlineUserCircle },
 ];
 
 export default function AdminLayout() {
