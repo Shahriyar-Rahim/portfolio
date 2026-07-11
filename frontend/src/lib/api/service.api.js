@@ -8,7 +8,7 @@ export const serviceApi = {
       .post("/service", payload, {
         headers:
           payload instanceof FormData
-            ? { "Content-Type": "multipart/form-data" }
+            ? { "Content-Type": undefined }
             : undefined,
       })
       .then((r) => r.data),
@@ -17,7 +17,7 @@ export const serviceApi = {
       .patch(`/service/${id}`, payload, {
         headers:
           payload instanceof FormData
-            ? { "Content-Type": "multipart/form-data" }
+            ? { "Content-Type": undefined }
             : undefined,
       })
       .then((r) => r.data),

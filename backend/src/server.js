@@ -3,6 +3,7 @@ import path from "path";
 import express from "express";
 import cors from "cors";
 import cookieParser from "cookie-parser";
+import multer from "multer";
 import connectDB from "./configs/database.config.js";
 import dns from "dns";
 import userRoutes from "./routes/user.routes.js";
@@ -69,6 +70,26 @@ app.use("/api/v1/cv", cvRoutes);
 app.use("/api/v1/portfolio/github", githubRoutes);
 app.use("/api/v1/auth/recovery", authRecoveryRoutes);
 app.use("/api/v1/about", aboutRoutes);
+
+app.use((err, req, res, next) => {
+  if (err instanceof multer.MulterError) {
+    if (err.code === "LIMIT_FILE_SIZE") {
+      return res.status(413).json({
+        success: false,
+        message: "File is too large (max 10MB).",
+      });
+    }
+    return res.status(400).json({ success: false, message: err.message });
+  }
+
+  if (err) {
+    // your existing fileFilter throws a plain Error() for unsupported types
+    return res.status(400).json({ success: false, message: err.message });
+  }
+
+  next();
+});
+ 
 
 app.get("/", (req, res) => {
   res.send("API is running...");

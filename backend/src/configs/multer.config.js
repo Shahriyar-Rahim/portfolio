@@ -1,5 +1,5 @@
 import multer from "multer";
-import CloudinaryStorage  from "multer-storage-cloudinary";
+import { CloudinaryStorage } from "multer-storage-cloudinary";
 import cloudinary from "./cloudinary.config.js";
 
 const storage = new CloudinaryStorage({
@@ -12,6 +12,7 @@ const storage = new CloudinaryStorage({
       "png",
       "jpeg",
       "heic",
+      "heif",
       "webp",
       "pdf",
       "doc",
@@ -26,6 +27,7 @@ const fileFilter = (req, file, cb) => {
     "image/png",
     "image/webp",
     "image/heic",
+    "image/heif",
     "application/pdf",
     "application/msword",
     "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
@@ -36,9 +38,15 @@ const fileFilter = (req, file, cb) => {
     return;
   }
 
-  cb(new Error("Only images and document files are allowed"));
+  cb(new Error(`Unsupported file type: ${file.mimetype}`));
 };
 
-const upload = multer({ storage, fileFilter });
+const upload = multer({
+  storage,
+  fileFilter,
+  limits: {
+    fileSize: 10 * 1024 * 1024,
+  },
+});
 
 export default upload;
