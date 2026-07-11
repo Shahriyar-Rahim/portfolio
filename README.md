@@ -8,7 +8,7 @@ A self-built, self-hosted portfolio platform — not a template. Every section (
 education, services, blog, testimonials, job board, CV/profile) is content-managed from a
 custom admin panel, backed by a REST API I designed and wired up myself.
 
-[![Live Demo](https://shahriyar.no-idea.top)](#-live-demo)
+[![Live Demo](https://img.shields.io/badge/live%20demo-visit%20site-c98a4b?style=for-the-badge)](#-live-demo)
 ![React](https://img.shields.io/badge/React-19-5ea8ed?style=flat-square&logo=react&logoColor=white)
 ![Node.js](https://img.shields.io/badge/Node.js-Express%205-6fcf97?style=flat-square&logo=node.js&logoColor=white)
 ![MongoDB](https://img.shields.io/badge/MongoDB-Mongoose%209-6fcf97?style=flat-square&logo=mongodb&logoColor=white)
