@@ -1,10 +1,13 @@
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { HiOutlineMail } from "react-icons/hi";
 import { useSendMessage } from "../lib/hooks/useInbox";
 import RevealOnScroll from "./RevealOnScroll";
 import SectionHeading from "./SectionHeading";
+import ThankYouModal from "./ThankYouModal";
 
 export default function ContactForm() {
+  const [showThanks, setShowThanks] = useState(false);
   const {
     register,
     handleSubmit,
@@ -14,7 +17,12 @@ export default function ContactForm() {
   const sendMessage = useSendMessage();
 
   const onSubmit = (values) => {
-    sendMessage.mutate(values, { onSuccess: () => reset() });
+    sendMessage.mutate(values, {
+      onSuccess: () => {
+        reset();
+        setShowThanks(true);
+      },
+    });
   };
 
   return (
@@ -80,6 +88,17 @@ export default function ContactForm() {
           </form>
         </RevealOnScroll>
       </div>
+
+      <ThankYouModal
+        open={showThanks}
+        title="Thank you"
+        message="Your message was received. I’ll reply to you as soon as I can."
+        actions={[
+          <button key="close" type="button" onClick={() => setShowThanks(false)} className="rounded-md bg-copper px-4 py-2 font-mono text-sm text-bg">
+            close
+          </button>,
+        ]}
+      />
     </section>
   );
 }

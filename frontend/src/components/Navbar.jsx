@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { HiMenu, HiX } from "react-icons/hi";
-import { Link, NavLink } from "react-router";
+import { Link } from "react-router";
 
 const LINKS = [
   { to: "/#about", label: "about" },
@@ -44,12 +44,6 @@ export default function Navbar() {
               {link.label}
             </a>
           ))}
-          <NavLink
-            to="/login"
-            className="font-mono text-sm rounded-md border border-line px-4 py-1.5 text-ink-dim hover:border-copper hover:text-copper-soft transition-colors"
-          >
-            login
-          </NavLink>
         </div>
 
         <button
@@ -78,13 +72,6 @@ export default function Navbar() {
               {link.label}
             </a>
           ))}
-          <NavLink
-            to="/login"
-            onClick={() => setOpen(false)}
-            className="font-mono text-sm text-copper-soft"
-          >
-            login
-          </NavLink>
         </motion.div>
       )}
     </header>

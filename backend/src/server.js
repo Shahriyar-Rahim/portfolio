@@ -14,6 +14,7 @@ import inboxRoutes from './routes/inbox.routes.js'
 import serviceRoutes from './routes/service.route.js'
 import testimonialRoutes from './routes/testimonial.routes.js'
 import blogRoutes from './routes/blog.routes.js'
+import heroStatusRoutes from "./routes/heroStatus.routes.js";
 import { authLimiter, generalLimiter } from './middlewares/rateLimiter.js';
 
 dns.setServers(['8.8.8.8', '1.1.1.1'])
@@ -53,6 +54,7 @@ app.use('/api/v1/inbox', generalLimiter , inboxRoutes);
 app.use('/api/v1/service', serviceRoutes);
 app.use('/api/v1/testimonial', testimonialRoutes);
 app.use('/api/v1/blogs', blogRoutes);
+app.use("/api/v1/hero-status", heroStatusRoutes);
 
 // 404 handler
 app.use((req, res) => {

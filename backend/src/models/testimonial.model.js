@@ -11,9 +11,13 @@ const testimonialSchema = new mongoose.Schema(
       type: String,
       trim: true
     },
-    img: { 
-      type: String,
-      default: "https://example.com/default-avatar.png"
+    images: {
+      type: [String],
+      validate: {
+        validator: (arr) => arr.length <= 3,
+        message: "A testimonial can have at most 3 images",
+      },
+      default: [],
     },
     feedback: { 
       type: String, 

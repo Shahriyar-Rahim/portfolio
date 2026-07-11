@@ -15,15 +15,24 @@ export default function BlogsAdmin() {
   const [editing, setEditing] = useState(null);
 
   const { register, handleSubmit, reset, formState: { errors } } = useForm();
+  const [imageFile, setImageFile] = useState(null);
 
-  const openNew = () => { setEditing({}); reset({ title: "", category: "", img: "", shortDescription: "", description: "" }); };
-  const openEdit = (item) => { setEditing(item); reset(item); };
+  const openNew = () => { setEditing({}); setImageFile(null); reset({ title: "", category: "", img: "", shortDescription: "", description: "" }); };
+  const openEdit = (item) => { setEditing(item); setImageFile(null); reset(item); };
 
   const onSubmit = (values) => {
+    const formData = new FormData();
+    formData.append("title", values.title);
+    formData.append("category", values.category);
+    formData.append("shortDescription", values.shortDescription);
+    formData.append("description", values.description);
+    if (imageFile) formData.append("image", imageFile);
+    if (!imageFile && values.img) formData.append("img", values.img);
+
     if (editing?._id) {
-      update.mutate({ id: editing._id, payload: values }, { onSuccess: () => setEditing(null) });
+      update.mutate({ id: editing._id, payload: formData }, { onSuccess: () => setEditing(null) });
     } else {
-      create.mutate(values, { onSuccess: () => setEditing(null) });
+      create.mutate(formData, { onSuccess: () => setEditing(null) });
     }
   };
 
@@ -50,7 +59,15 @@ export default function BlogsAdmin() {
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           <FieldInput label="title" name="title" register={register} required error={errors.title} />
           <FieldInput label="category" name="category" register={register} required error={errors.category} />
-          <FieldInput label="cover image URL" name="img" register={register} required error={errors.img} />
+          <div>
+            <label className="font-mono text-xs text-ink-muted block mb-1.5">cover image upload</label>
+            <input
+              type="file"
+              accept="image/*"
+              onChange={(event) => setImageFile(event.target.files?.[0] || null)}
+              className="w-full rounded-md border border-dashed border-line bg-bg px-3.5 py-2 text-sm text-ink"
+            />
+          </div>
           <FieldInput label="short description" name="shortDescription" textarea register={register} required error={errors.shortDescription} />
           <FieldInput label="full content" name="description" textarea register={register} rows={8} required error={errors.description} />
           <button type="submit" className="w-full rounded-md bg-copper px-4 py-2.5 font-mono text-sm text-bg font-medium hover:bg-copper-soft transition-colors">

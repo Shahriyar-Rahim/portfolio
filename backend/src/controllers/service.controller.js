@@ -5,7 +5,10 @@ const createService = async (req, res) => {
     const user = req.user;
     if (!user) return res.status(401).json({ message: "Unauthorized" });
 
-    const { title, description, img } = req.body;
+    const { title, description } = req.body;
+    // req.file comes from multer (upload.single("image")) — .path is the
+    // hosted Cloudinary URL.
+    const img = req.file ? req.file.path : req.body.img;
 
     if (!title || !description || !img)
       return res
@@ -44,9 +47,12 @@ const updateService = async (req, res) => {
         .json({ success: false, message: "Service id is required" });
     }
 
+    const updatePayload = { ...req.body };
+    if (req.file) updatePayload.img = req.file.path;
+
     const updatedService = await Service.findOneAndUpdate(
       { _id: id, user: userId },
-      { $set: req.body },
+      { $set: updatePayload },
       {
         new: true,
         runValidators: true,

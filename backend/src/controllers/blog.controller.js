@@ -2,7 +2,17 @@ import Blog from "../models/blog.model.js";
 
 const createBlog = async (req, res) => {
   try {
-    const blogData = req.body;
+    const blogData = { ...req.body };
+
+    // req.file comes from multer (upload.single("image")) with
+    // CloudinaryStorage — its `.path` is already the hosted URL.
+    if (req.file) blogData.img = req.file.path;
+
+    if (!blogData.img)
+      return res
+        .status(400)
+        .json({ success: false, message: "A cover image is required" });
+
     const result = await Blog.create(blogData);
 
     res.status(201).json({
@@ -92,20 +102,19 @@ const singleBlog = async (req, res) => {
 const updateBlog = async (req, res) => {
     try {
     const { id } = req.params;
-    const { title, img, category, description, shortDescription } = req.body;
+    const { title, category, description, shortDescription } = req.body;
     if (!id)
       return res
         .status(400)
         .json({ success: false, message: "No id provided" });
+
+    const updateData = { title, category, description, shortDescription };
+    // Only overwrite the image if a new one was uploaded — otherwise keep the existing one.
+    if (req.file) updateData.img = req.file.path;
+
     const blog = await Blog.findByIdAndUpdate(
         id,
-        {
-            title,
-            img,
-            category,
-            description,
-            shortDescription
-        },
+        updateData,
         {
             new: true
         }

@@ -48,8 +48,8 @@ export default function TestimonialSlider() {
                 </div>
                 <p className="text-ink-dim leading-relaxed">&ldquo;{current.feedback}&rdquo;</p>
                 <div className="flex items-center gap-3 mt-6">
-                  {current.img ? (
-                    <img src={current.img} alt={current.clientName} className="h-10 w-10 rounded-full object-cover" />
+                  {current.images?.[0] ? (
+                    <img src={current.images[0]} alt={current.clientName} className="h-10 w-10 rounded-full object-cover" />
                   ) : (
                     <span className="h-10 w-10 rounded-full bg-copper/20 text-copper-soft font-mono text-xs flex items-center justify-center">
                       {initials(current.clientName)}

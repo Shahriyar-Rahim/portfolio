@@ -1,13 +1,5 @@
 import Inbox from "../models/inbox.model.js";
-import nodemailer from "nodemailer";
-
-const transporter = nodemailer.createTransport({
-  service: "gmail", // or your SMTP provider
-  auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS, // Use App Passwords for Gmail
-  },
-});
+import { sendMailSafe } from "../configs/mailer.config.js";
 
 const makeInbox = async (req, res) => {
   try {
@@ -42,25 +34,30 @@ const makeInbox = async (req, res) => {
       message,
     });
 
-    // Email notifications are best-effort: if SMTP creds are missing/misconfigured
-    // the message is still saved, and the visitor still gets a success response.
-    try {
-      await transporter.sendMail({
-        from: `"Portfolio Contact" <${process.env.EMAIL_USER}>`,
-        to: process.env.EMAIL_RECIPIENT,
-        replyTo: email, // This is the visitor's email address
-        subject: `New Message: ${subject}`,
-        text: `Message from ${name}:\n\n${message}`,
-      });
+    const ownerEmail = process.env.EMAIL_RECIPIENT || process.env.SMTP_USER;
+    const senderEmail = process.env.EMAIL_USER || process.env.SMTP_USER;
 
-      await transporter.sendMail({
-        from: `"Md. Shahriyar Rahim" <${process.env.EMAIL_USER}>`,
-        to: email, // This sends it back to the person who messaged you
-        subject: "Message Received - Thank You!",
-        text: `Hi ${name},\n\nThank you for reaching out! I have received your message regarding "${subject}" and will get back to you as soon as possible.\n\nBest regards,\nMd. Shahriyar Rahim`,
-      });
-    } catch (mailError) {
-      console.error("Inbox email notification failed:", mailError.message);
+    const ownerMail = await sendMailSafe({
+      from: `"Portfolio Contact" <${senderEmail}>`,
+      to: ownerEmail,
+      replyTo: email,
+      subject: `New Message: ${subject}`,
+      text: `Message from ${name}:\n\n${message}`,
+    });
+
+    if (!ownerMail.success) {
+      console.warn("Contact notification email failed:", ownerMail.error);
+    }
+
+    const senderMail = await sendMailSafe({
+      from: `"Md. Shahriyar Rahim" <${senderEmail}>`,
+      to: email,
+      subject: "Message Received - Thank You!",
+      text: `Hi ${name},\n\nThank you for reaching out! I have received your message regarding "${subject}" and will get back to you as soon as possible.\n\nBest regards,\nMd. Shahriyar Rahim`,
+    });
+
+    if (!senderMail.success) {
+      console.warn("Thank-you email failed:", senderMail.error);
     }
 
     res.status(201).json({
@@ -140,12 +137,17 @@ const replyInbox = async (req, res) => {
     }
 
     // 2. Send the email to the user
-    await transporter.sendMail({
-      from: `"Md. Shahriyar Rahim" <${process.env.EMAIL_USER}>`,
+    const senderEmail = process.env.EMAIL_USER || process.env.SMTP_USER;
+    const replyMail = await sendMailSafe({
+      from: `"Md. Shahriyar Rahim" <${senderEmail}>`,
       to: inbox.email, // Use the email from the original document
       subject: `Re: ${inbox.subject}`,
       text: replyMessage,
     });
+
+    if (!replyMail.success) {
+      console.warn("Inbox reply email failed:", replyMail.error);
+    }
 
     // 3. Update the database record to include the reply
     inbox.reply = replyMessage;
