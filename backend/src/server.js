@@ -1,5 +1,4 @@
 import dotenv from "dotenv";
-import path from "path";
 import express from "express";
 import cors from "cors";
 import cookieParser from "cookie-parser";
@@ -21,10 +20,14 @@ import cvRoutes from "./routes/cv.routes.js";
 import githubRoutes from "./routes/github.routes.js";
 import authRecoveryRoutes from "./routes/authRecovery.routes.js";
 import aboutRoutes from "./routes/about.routes.js";
-
 import { authLimiter, generalLimiter } from "./middlewares/rateLimiter.js";
 
-dns.setServers(["8.8.8.8", "1.1.1.1"]);
+try {
+  dns.setServers(["8.8.8.8", "1.1.1.1"]);
+} catch (err) {
+  console.warn("dns.setServers skipped:", err.message);
+}
+
 dotenv.config();
 
 const app = express();
@@ -36,16 +39,30 @@ const allowedOrigins = [
   "http://localhost:5173",
 ].filter(Boolean);
 
+// Matches allowedOrigins exactly, or any subdomain of no-idea.top
+// (e.g. https://shahriyar.no-idea.top). Anything else is rejected —
+// previously this always fell through to `callback(null, true)` regardless
+// of the checks above, silently allowing every origin.
+function isAllowedOrigin(origin) {
+  if (allowedOrigins.includes(origin)) return true;
+  try {
+    const { hostname } = new URL(origin);
+    return hostname === "no-idea.top" || hostname.endsWith(".no-idea.top");
+  } catch {
+    return false;
+  }
+}
+
 app.use(
   cors({
     origin: function (origin, callback) {
       if (!origin) return callback(null, true);
 
-      if (allowedOrigins.includes(origin) || origin.includes("no-idea.top")) {
+      if (isAllowedOrigin(origin)) {
         return callback(null, true);
       }
 
-      return callback(null, true);
+      return callback(new Error(`Origin ${origin} not allowed by CORS`));
     },
     credentials: true,
   }),
@@ -87,7 +104,6 @@ app.use((err, req, res, next) => {
   }
 
   if (err) {
-    // your existing fileFilter throws a plain Error() for unsupported types
     return res.status(400).json({ success: false, message: err.message });
   }
 
