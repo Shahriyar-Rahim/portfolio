@@ -1,10 +1,12 @@
 import dotenv from "dotenv";
+import path from "path";
 import express from "express";
 import cors from "cors";
 import cookieParser from "cookie-parser";
 import connectDB from "./configs/database.config.js";
 import dns from "dns";
-import rateLimit from "express-rate-limit";
+
+// Routes
 import userRoutes from "./routes/user.routes.js";
 import commentRoutes from "./routes/comment.route.js";
 import educationRoutes from "./routes/education.routes.js";
@@ -20,26 +22,27 @@ import cvRoutes from "./routes/cv.routes.js";
 import githubRoutes from "./routes/github.routes.js";
 import authRecoveryRoutes from "./routes/authRecovery.routes.js";
 import aboutRoutes from "./routes/about.routes.js";
+
 import { authLimiter, generalLimiter } from "./middlewares/rateLimiter.js";
 
 dns.setServers(["8.8.8.8", "1.1.1.1"]);
-
 dotenv.config();
 
-const port = process.env.PORT;
 const app = express();
+const port = process.env.PORT || 5000;
+const __dirname = path.resolve();
 
-const allowedOrigins = [process.env.FRONTEND_URL, "http://localhost:5173"];
+const allowedOrigins = [
+  process.env.FRONTEND_URL,
+  "http://localhost:5173",
+].filter(Boolean);
 
 app.use(
   cors({
     origin: function (origin, callback) {
       if (!origin) return callback(null, true);
 
-      if (
-        allowedOrigins.includes(origin) ||
-        origin.includes("no-idea.top") // 👈 allows subdomains too
-      ) {
+      if (allowedOrigins.includes(origin) || origin.includes("no-idea.top")) {
         return callback(null, true);
       }
 
@@ -48,9 +51,10 @@ app.use(
     credentials: true,
   }),
 );
+
 app.use(express.json());
-app.use(cookieParser());
 app.use(express.urlencoded({ extended: true }));
+app.use(cookieParser());
 
 connectDB();
 
@@ -70,19 +74,31 @@ app.use("/api/v1/portfolio/github", githubRoutes);
 app.use("/api/v1/auth/recovery", authRecoveryRoutes);
 app.use("/api/v1/about", aboutRoutes);
 
-// 404 handler
+app.use(express.static(path.join(__dirname, "../frontend/dist")));
+
+app.get("*", (req, res) => {
+  if (req.originalUrl.startsWith("/api")) {
+    return res.status(404).json({ message: "API route not found" });
+  }
+
+  res.sendFile(path.join(__dirname, "../frontend/dist/index.html"));
+});
+
 app.use((req, res) => {
-  res
-    .status(404)
-    .json({ success: false, message: `Route ${req.originalUrl} not found` });
+  res.status(404).json({
+    success: false,
+    message: `Route ${req.originalUrl} not found`,
+  });
 });
 
-// Global error handler
 app.use((err, req, res, next) => {
-  console.error(err.stack);
-  res
-    .status(err.status || 500)
-    .json({ success: false, message: err.message || "Internal Server Error" });
+  console.error("🔥 ERROR:", err.message);
+  res.status(err.status || 500).json({
+    success: false,
+    message: err.message || "Internal Server Error",
+  });
 });
 
-app.listen(port, () => console.log(`Server running on port ${port}`));
+app.listen(port, () => {
+  console.log(`🚀 Server running on port ${port}`);
+});
