@@ -21,7 +21,7 @@ custom admin panel, backed by a REST API I designed and wired up myself.
 
 ```
 $ whoami
-> Md. Shahriyar Rahim — BSc CSE @ BAUST · MERN developer · embedded/IoT tinkerer
+> Md. Shahriyar Rahim — BSc CSE @ BAUST · MERN developer · AI/ML . BIOINFORMATICS
 ```
 
 ## 🔗 Live Demo
